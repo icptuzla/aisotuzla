@@ -48,6 +48,17 @@ import {
   InvestorProfile
 } from "./types";
 
+// Image assets
+import imgSolNft from "./data/SOLNFT33.png";
+import imgSaltPaprika from "./data/Salt and Paprika.png";
+import imgBathSalt from "./data/BathSaltSOL.png";
+import imgSaltForSol from "./data/SaltForSOL.png";
+import imgTuzQA from "./data/LogoAsQualityAssuranceTUZ.png";
+import imgTourLogo from "./data/LogoTuzlaTourApp.png";
+import imgKenan from "./data/kenan-alajbegovic.png";
+import imgKenanToy from "./data/KenanToy.png";
+import imgAisoRebuild from "./data/AISO REBUILD.png";
+
 export default function App() {
   // Localization states
   const [language, setLanguage] = useState<"en" | "bs">("en");
@@ -83,7 +94,7 @@ export default function App() {
   // Gigafactory Pipeline States
   const [enableHydroFlow, setEnableHydroFlow] = useState<boolean>(true);
   const [enableRecycledHeat, setEnableRecycledHeat] = useState<boolean>(true);
-  
+
   // Cavern stabilization states
   const [cavernList, setCavernList] = useState<CavernState[]>(CAVERNS);
   const [stablizingId, setStabilizingId] = useState<string | null>(null);
@@ -161,7 +172,7 @@ export default function App() {
     const baseMargin = 12; // base margin
     const netMargin = Math.min(22, baseMargin + carbonTaxSavingsRatio * 150); // capped at 22%
     const annualEbitda = (totalRevenue * netMargin) / 100;
-    
+
     // IRR correlates with Net margins and scale
     const irr = 15 + (netMargin - baseMargin) * 2 + (scale * 0.8);
     const jobs = Math.round(scale * 70 + (tpyBrine / 2000)); // 70 direct jobs per GWh, rest in mining
@@ -182,18 +193,18 @@ export default function App() {
     setUserXp((prev) => prev + xp);
     setTuzBalance((prev) => prev + xp / 10);
     setSolBalance((prev) => parseFloat((prev + 0.05).toFixed(2))); // minor faucet incentive
-    
+
     // Unlock matching player card
     const randomPlayer = BOSNIA_PLAYERS.find(p => !unlockedPlayers.includes(p.id));
     if (randomPlayer) {
       setUnlockedPlayers((prev) => [...prev, randomPlayer.id]);
-      setScanMessage(language === "bs" 
+      setScanMessage(language === "bs"
         ? `📍 Provjera Lokacije Uspješna! Otključana sportska NFT kartica: ${randomPlayer.name} (#${randomPlayer.number})! TX potpis: sol_tg_${Date.now().toString(36)}`
         : `📍 Checkpoint Scanned! Unlocked Bosnian WC '26 Sports NFT: ${randomPlayer.name} (#${randomPlayer.number})! Generated TX signature: sol_tg_${Date.now().toString(36)}`);
     } else {
       setScanMessage(language === "bs"
-        ? `📍 Provjera Lokacije Uspješna! Osvojene nagrade: +${xp} XP i +${xp/10} TUZ!`
-        : `📍 Checkpoint Scanned! Earned rewards: +${xp} XP & +${xp/10} TUZ!`);
+        ? `📍 Provjera Lokacije Uspješna! Osvojene nagrade: +${xp} XP i +${xp / 10} TUZ!`
+        : `📍 Checkpoint Scanned! Earned rewards: +${xp} XP & +${xp / 10} TUZ!`);
     }
 
     setTimeout(() => {
@@ -227,7 +238,7 @@ export default function App() {
   const mintOnSolana = async () => {
     setIsMinting(true);
     setMintReport("");
-    
+
     try {
       const response = await fetch("/api/blockchain/mint", {
         method: "POST",
@@ -239,7 +250,7 @@ export default function App() {
         })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         const newBatch: TuzProtocolBatch = {
           batchId: `TUZ-${selectedSource.split(" ").slice(-1)[0]}-${Date.now().toString().substring(9)}`,
@@ -253,7 +264,7 @@ export default function App() {
           onChainTx: data.txSignature,
           esgRating: customPurity >= 99.9 && enableHydroFlow ? "AAA" : "AA"
         };
-        
+
         setCertifiedBatches((prev) => [newBatch, ...prev]);
         setTuzBalance((prev) => prev + 50); // Rewards on Solana
         setMintReport(`Batch ${newBatch.batchId} successfully tokenized! Recieved ${newBatch.classification} certification. Signature: ${data.txSignature}`);
@@ -337,7 +348,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-slate-100 font-sans ambient-bg p-4 md:p-6 flex flex-col justify-between">
-      
+
       {/* 1. Header Navigation Bar */}
       <header className="w-full max-w-7xl mx-auto border-b border-slate-800 pb-5 mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -351,18 +362,16 @@ export default function App() {
             <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-0.5 select-none shrink-0" id="lang-switcher">
               <button
                 onClick={() => setLanguage("en")}
-                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${
-                  language === "en" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
-                }`}
+                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${language === "en" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
+                  }`}
                 id="lang-selector-en"
               >
                 EN
               </button>
               <button
                 onClick={() => setLanguage("bs")}
-                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${
-                  language === "bs" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
-                }`}
+                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${language === "bs" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
+                  }`}
                 id="lang-selector-bs"
               >
                 BS
@@ -373,8 +382,8 @@ export default function App() {
             Tuzla Solana City <span className="font-light text-slate-400">{language === "bs" ? "Centar Vizije" : "Vision Hub"}</span>
           </h1>
           <p className="text-xs text-slate-400 font-mono mt-0.5">
-            {language === "bs" 
-              ? "Faza I-III Bankabilna Industrijska Izmjena i Solana Web3 Simbioza" 
+            {language === "bs"
+              ? "Faza I-III Bankabilna Industrijska Izmjena i Solana Web3 Simbioza"
               : "Phase I-III Bankable Industrial Transformation & Solana Web3 Symbiosis"}
           </p>
         </div>
@@ -409,29 +418,27 @@ export default function App() {
 
       {/* 2. Main Content Grid - Vertical/Horizontal Tabs Layout */}
       <main className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-grow">
-        
+
         {/* Navigation Sidebar Panel (ColumnSpan 3) */}
         <nav className="col-span-1 lg:col-span-3 flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-2 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/80 sticky top-4 z-40">
           <button
             onClick={() => setActiveTab("deck")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
-              activeTab === "deck"
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/15"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-            }`}
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "deck"
+              ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/15"
+              : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
             id="nav-deck"
           >
             <Layers className="w-4 h-4" />
             <span>{t.deck}</span>
           </button>
-          
+
           <button
             onClick={() => setActiveTab("digital")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
-              activeTab === "digital"
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-            }`}
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "digital"
+              ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
             id="nav-digital"
           >
             <Globe2 className="w-4 h-4" />
@@ -440,11 +447,10 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("physical")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
-              activeTab === "physical"
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-            }`}
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "physical"
+              ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
             id="nav-physical"
           >
             <Box className="w-4 h-4" />
@@ -453,11 +459,10 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("industrial")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
-              activeTab === "industrial"
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-            }`}
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "industrial"
+              ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
             id="nav-industrial"
           >
             <Cpu className="w-4 h-4" />
@@ -466,11 +471,10 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("financial")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
-              activeTab === "financial"
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-            }`}
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "financial"
+              ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
             id="nav-financial"
           >
             <Sliders className="w-4 h-4" />
@@ -479,11 +483,10 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("ai_tailor")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
-              activeTab === "ai_tailor"
-                ? "bg-gradient-to-r from-slate-700 to-slate-800 text-[#14F195] border border-[#14F195]/20 shadow-md"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-            }`}
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "ai_tailor"
+              ? "bg-gradient-to-r from-slate-700 to-slate-800 text-[#14F195] border border-[#14F195]/20 shadow-md"
+              : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
             id="nav-ai-tailor"
           >
             <Sparkles className="w-4 h-4 text-[#14F195]" />
@@ -500,7 +503,16 @@ export default function App() {
                   rel="noopener noreferrer"
                   className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center justify-between"
                 >
-                  <span>{t.portalLink}</span>
+                  <span>AISO Tuzla AI Portal</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <a
+                  href="https://bosnia-collection.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center justify-between"
+                >
+                  <span>Bosnia Collection NFT</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
                 <a
@@ -509,7 +521,7 @@ export default function App() {
                   rel="noopener noreferrer"
                   className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center justify-between"
                 >
-                  <span>{t.tourLink}</span>
+                  <span>Tuzla Tour App</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
                 <a
@@ -518,7 +530,16 @@ export default function App() {
                   rel="noopener noreferrer"
                   className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center justify-between"
                 >
-                  <span>{t.shopLink}</span>
+                  <span>House of Salt Shop</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <a
+                  href="https://tuz-protocol.onhercules.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center justify-between"
+                >
+                  <span>TUZ Protocol</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -528,11 +549,11 @@ export default function App() {
 
         {/* Showcase / Workstation Arena (ColumnSpan 9) */}
         <section className="col-span-1 lg:col-span-9 grid grid-cols-1 gap-6">
-          
+
           {/* A. If showing Master Pitch Slides Tab */}
           {activeTab === "deck" && (
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 bg-slate-900/30 p-1 rounded-2xl">
-              
+
               {/* Left Side: Presentation Card (6/12 columns) */}
               <div className="xl:col-span-7 bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl flex flex-col justify-between min-h-[500px]">
                 <div>
@@ -576,9 +597,8 @@ export default function App() {
                       <button
                         key={idx}
                         onClick={() => jumpToSlide(idx)}
-                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 shrink-0 ${
-                          currentSlideIndex === idx ? "bg-[#14F195] w-6" : "bg-slate-700 hover:bg-slate-500"
-                        }`}
+                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 shrink-0 ${currentSlideIndex === idx ? "bg-[#14F195] w-6" : "bg-slate-700 hover:bg-slate-500"
+                          }`}
                         title={`Go to Slide ${idx + 1}`}
                       />
                     ))}
@@ -594,7 +614,7 @@ export default function App() {
                       <ArrowLeft className="w-4 h-4" />
                       <span className="text-xs font-mono">{t.prev}</span>
                     </button>
-                    
+
                     <button
                       onClick={handleNextSlide}
                       disabled={currentSlideIndex === PRESENTATION_SLIDES.length - 1}
@@ -610,7 +630,7 @@ export default function App() {
 
               {/* Right Side: Animated Real-time Map and Simulator HUD (5/12 columns) */}
               <div className="xl:col-span-5 bg-slate-950/90 border border-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between overflow-hidden relative">
-                
+
                 {/* Header Badge */}
                 <div className="p-4 border-b border-slate-800/60 bg-slate-900/30 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
@@ -624,7 +644,7 @@ export default function App() {
 
                 {/* Simulated Content Area that updates depending on what slide is selected */}
                 <div className="p-6 flex-grow flex flex-col justify-center">
-                  
+
                   {/* Visualizer 1: Interactive GIS Map */}
                   {currentSlide.visualId === "map" && (
                     <div className="space-y-4">
@@ -632,7 +652,7 @@ export default function App() {
                         <span>{t.gpsTarget}</span>
                         <span className="text-[#14F195]">{hoveredCoords}</span>
                       </div>
-                      
+
                       {/* Customized Tuzla SVG Blueprint Map Card */}
                       <div className="border border-slate-800 rounded-xl relative p-1.5 overflow-hidden group bg-slate-950">
                         <svg viewBox="0 0 400 250" className="w-full h-auto text-slate-600 bg-slate-950 rounded-lg">
@@ -686,12 +706,12 @@ export default function App() {
                           <text x="290" y="115" fill="#a5f3fc" fontSize="8" fontFamily="font-mono">{language === "bs" ? "Panonska Jezera" : "Pannonian Lakes"}</text>
                         </svg>
                       </div>
-                      
+
                       {/* Floating Tour Logo Emblem in Map View */}
                       <div className="absolute top-16 right-4 w-12 h-12 rounded-full border border-yellow-500/30 bg-slate-900/90 p-1 flex items-center justify-center shadow-lg group pointer-events-none select-none">
                         <img src="/TuzlaTourLogo.png" alt="Tour Logo" className="w-10 h-10 object-contain rounded-full" />
                       </div>
-                      
+
                       <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-lg">
                         <p className="text-[10px] font-mono text-[#14F195] uppercase font-bold">{t.mapGuideTitle}</p>
                         <p className="text-xs text-slate-350 mt-1">
@@ -705,11 +725,11 @@ export default function App() {
                   {currentSlide.visualId === "aiso" && (
                     <div className="space-y-4">
                       <div className="relative border border-slate-800 rounded-xl overflow-hidden group bg-slate-950 shadow-md">
-                        <img 
-                          src="/AISO REBUILD.png" 
+                        <img
+                          src={imgAisoRebuild}
                           referrerPolicy="no-referrer"
-                          alt="AISO Rebuild" 
-                          className="w-full h-24 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-500" 
+                          alt="AISO Rebuild"
+                          className="w-full h-24 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-2 md:p-3">
                           <span className="text-[9px] bg-indigo-600 text-white font-mono px-2 py-0.5 rounded-md w-max border border-indigo-500/30 uppercase font-bold tracking-wider">
@@ -753,13 +773,13 @@ export default function App() {
                         </div>
                         <div className="mt-3 flex flex-col items-center">
                           <div className="w-full max-h-24 overflow-hidden rounded-lg border border-slate-800 bg-slate-950 p-1 relative flex items-center justify-center">
-                            <img src="/KenanAlajbegovic.png" referrerPolicy="no-referrer" alt="Kenan Digital Album Sticker" className="max-h-20 object-contain rounded" />
+                            <img src={imgKenan} referrerPolicy="no-referrer" alt="Kenan Digital Album Sticker" className="max-h-20 object-contain rounded" />
                           </div>
                           <p className="text-[9px] font-bold text-slate-200 mt-1 truncate max-w-full">Kenan Alajbegović (NFT)</p>
                         </div>
                         <div className="mt-3 flex flex-col items-center">
                           <div className="w-full max-h-24 overflow-hidden rounded-lg border border-slate-800 bg-slate-950 p-1 relative flex items-center justify-center">
-                            <img src="/KenanToy.png" referrerPolicy="no-referrer" alt="Kenan Collectible Toy Souvenir" className="max-h-20 object-contain rounded" />
+                            <img src={imgKenanToy} referrerPolicy="no-referrer" alt="Kenan Collectible Toy Souvenir" className="max-h-20 object-contain rounded" />
                           </div>
                           <p className="text-[9px] font-bold text-slate-200 mt-1 truncate max-w-full">KenanToy (Gift)</p>
                         </div>
@@ -771,11 +791,10 @@ export default function App() {
                           return (
                             <div
                               key={player.id}
-                              className={`p-2 rounded-lg border text-center relative ${
-                                isUnlocked
-                                  ? "bg-slate-905 border-[#14F195]/40"
-                                  : "bg-slate-950/20 border-slate-850 opacity-50"
-                              }`}
+                              className={`p-2 rounded-lg border text-center relative ${isUnlocked
+                                ? "bg-slate-905 border-[#14F195]/40"
+                                : "bg-slate-950/20 border-slate-850 opacity-50"
+                                }`}
                             >
                               <div className="text-[10px] font-mono text-[#14F195] bg-[#14F195]/5 px-1 rounded-full absolute top-1 right-1">
                                 {player.grade}
@@ -822,21 +841,21 @@ export default function App() {
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex flex-col items-center">
                           <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
-                            <img src="/Salt and Paprika.png" referrerPolicy="no-referrer" alt="Salt & Paprika" className="h-full object-contain" />
+                            <img src={imgSaltPaprika} referrerPolicy="no-referrer" alt="Salt & Paprika" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "So i Crvena Paprika" : "Salt and Paprika"}</p>
                           <p className="text-[9px] font-mono text-[#14F195]">12 TUZ</p>
                         </div>
                         <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex flex-col items-center">
                           <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
-                            <img src="/BathSaltSOL.png" referrerPolicy="no-referrer" alt="Bath Salt SOL" className="h-full object-contain" />
+                            <img src={imgBathSalt} referrerPolicy="no-referrer" alt="Bath Salt SOL" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "Sol za kupanje SOL" : "Bath Salt SOL"}</p>
                           <p className="text-[9px] font-mono text-[#14F195]">15 TUZ</p>
                         </div>
                         <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex flex-col items-center">
                           <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
-                            <img src="/SaltForSOL.png" referrerPolicy="no-referrer" alt="Salt For SOL" className="h-full object-contain" />
+                            <img src={imgSaltForSol} referrerPolicy="no-referrer" alt="Salt For SOL" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "Kuhinjska So za SOL" : "Salt for SOL"}</p>
                           <p className="text-[9px] font-mono text-[#14F195]">8 TUZ</p>
@@ -844,7 +863,7 @@ export default function App() {
                         <div className="bg-slate-900 border border-[#14F195]/30 p-2 rounded-xl flex flex-col items-center bg-indigo-950/20 relative">
                           <span className="absolute top-1 right-1 bg-yellow-500 text-slate-950 text-[7px] px-1 font-mono rounded font-bold uppercase tracking-wider scale-90">LTD</span>
                           <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-indigo-900/60">
-                            <img src="/SOLNFT33.png" referrerPolicy="no-referrer" alt="Solana Special Limited Edition Pack" className="h-full object-contain" />
+                            <img src={imgSolNft} referrerPolicy="no-referrer" alt="Solana Special Limited Edition Pack" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "So u Posebnom Solana Pakovanju" : "SOL NFT Limited Edition"}</p>
                           <p className="text-[9px] font-mono text-yellow-400">0.05 SOL</p>
@@ -866,7 +885,7 @@ export default function App() {
                         <div className="max-w-sm">
                           <h4 className="text-xs font-mono font-bold text-slate-200">{language === "bs" ? "Fizički Solana \"Sol\" Suvenir" : "The Solana \"Sol\" / \"Solana\" Souvenir"}</h4>
                           <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
-                            {language === "bs" 
+                            {language === "bs"
                               ? "Fizički suvenir poslan investitorima sa kristalima slane rude iz Tuzle, sa scan-to-claim QR kodom za preuzimanje pratećih digitalnih tokena i NFT-ova na Solani."
                               : "Mailed physically to VCs containing premium vacuum crystal salt of Tuzla. Backed by a scan-to-claim NFT holding 100 TUZ tokens."}
                           </p>
@@ -882,7 +901,7 @@ export default function App() {
                       <div className="grid grid-cols-2 gap-3 p-3 bg-slate-900 border border-slate-800 rounded-xl">
                         <div className="flex flex-col items-center">
                           <div className="w-full h-24 overflow-hidden rounded-lg bg-teal-900/10 flex items-center justify-center p-1 border border-teal-500/20">
-                            <img src="/LogoAsQualityAssuranceTUZ.png" referrerPolicy="no-referrer" alt="TUZ Quality Assurance Logo" className="h-full object-contain" />
+                            <img src={imgTuzQA} referrerPolicy="no-referrer" alt="TUZ Quality Assurance Logo" className="h-full object-contain" />
                           </div>
                           <p className="text-[9px] font-bold text-teal-400 mt-1 uppercase font-mono">{language === "bs" ? "TUZ Pečat Kvaliteta" : "TUZ QA Stamp"}</p>
                         </div>
@@ -905,16 +924,16 @@ export default function App() {
                             <p className="text-slate-200 font-mono text-sm">REG-2023-1542</p>
                           </div>
                         </div>
-                        
+
                         <div className="border border-slate-800 rounded p-2.5 bg-slate-950 text-xs text-slate-300 font-mono leading-relaxed">
                           <span className="text-indigo-400">"attributes"</span>: [
-                            <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"origin"</span>: "Tetima Deep Well"{"}"},
-                            <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"purity_level"</span>: "99.95% NaCl"{"}"},
-                            <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"carbon_kg"</span>: "0.08 kgCO2"{"}"}
-                            <br />]
+                          <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"origin"</span>: "Tetima Deep Well"{"}"},
+                          <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"purity_level"</span>: "99.95% NaCl"{"}"},
+                          <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"carbon_kg"</span>: "0.08 kgCO2"{"}"}
+                          <br />]
                         </div>
                       </div>
-                      
+
                       <button
                         onClick={() => setActiveTab("physical")}
                         className="w-full text-center text-xs text-indigo-400 hover:text-indigo-300 flex items-center justify-center gap-1 bg-indigo-500/10 py-2.5 rounded-lg border border-indigo-500/20"
@@ -986,7 +1005,7 @@ export default function App() {
                           <span className="text-slate-400 font-mono">DOME SUB-RADAR SAT:</span>
                           <span className="text-[#14F195] animate-pulse">Telemetry Live</span>
                         </div>
-                        
+
                         {/* Interactive sonar waves */}
                         <div className="h-28 bg-slate-900 rounded-lg flex items-center justify-center relative overflow-hidden border border-slate-800">
                           {/* Circle radar rings */}
@@ -996,7 +1015,7 @@ export default function App() {
                           {/* Crosshair grids */}
                           <div className="absolute inset-x-0 top-1/2 h-px bg-slate-800"></div>
                           <div className="absolute inset-y-0 left-1/2 w-px bg-slate-800"></div>
-                          
+
                           <span className="absolute bottom-2 left-2 text-[8px] font-mono text-slate-500">InSAR FEED // REF: TETIMA-V1</span>
                         </div>
                       </div>
@@ -1077,7 +1096,7 @@ export default function App() {
           {/* B. If showing Digital AISO & Tour App Tab */}
           {activeTab === "digital" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               {/* Box 1: AISO Structured Schema Sandbox */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div>
@@ -1088,7 +1107,7 @@ export default function App() {
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                     By providing structured schema.org blocks (JSON-LD), we make local Tuzla attractions discoverable by AI search agents. Standard SEO targets keywords; AI optimization targets semantically structured truth.
                   </p>
-                  
+
                   <div className="space-y-3.5 mt-5">
                     <div>
                       <label className="text-[10px] font-mono text-slate-400 block mb-1 uppercase">Landmark/Business Name</label>
@@ -1134,10 +1153,13 @@ export default function App() {
               {/* Box 2: Tour App and Collectibles Wallet */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
-                    <Wallet className="w-5 h-5 text-[#14F195]" />
-                    <span>Tuzla Tour AR Check-in Simulator</span>
-                  </h3>
+                  <div className="flex items-center gap-3 mb-1">
+                    <img src={imgTourLogo} alt="Tuzla Tour App" className="w-10 h-10 object-contain rounded-lg border border-indigo-500/30 bg-indigo-900/10 p-1 shrink-0" />
+                    <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
+                      <Wallet className="w-5 h-5 text-[#14F195]" />
+                      <span>Tuzla Tour AR Check-in Simulator</span>
+                    </h3>
+                  </div>
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                     Virtual tourist app with real GPS coordination checking. Visit real landmarks to scan AR guides and unlock collectible sports NFTs for the Bosnia National Team on World Cup 2026.
                   </p>
@@ -1179,7 +1201,7 @@ export default function App() {
           {/* C. If showing Physical Souvenirs & TUZ Tab */}
           {activeTab === "physical" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               {/* Box 1: House of Salt Catalogue */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
                 <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
@@ -1191,15 +1213,21 @@ export default function App() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-3 mt-5">
-                  <div className="p-3 border border-slate-800 rounded bg-slate-950">
+                  <div className="p-3 border border-slate-800 rounded bg-slate-950 flex flex-col">
                     <p className="text-xs font-bold text-slate-200">Luxury Solana Salt Box</p>
                     <p className="text-[10px] font-mono text-[#14F195] mt-0.5">Mailed to Investors</p>
                     <p className="text-[11px] text-slate-400 mt-1">Solana themed packaging holding 1 kg raw vacuum crystal salts.</p>
+                    <div className="mt-2 rounded-lg overflow-hidden border border-slate-700 bg-slate-950 flex items-center justify-center">
+                      <img src={imgSolNft} alt="Luxury Solana Salt Box" className="w-full h-28 object-contain" />
+                    </div>
                   </div>
-                  <div className="p-3 border border-slate-800 rounded bg-slate-950">
+                  <div className="p-3 border border-slate-800 rounded bg-slate-950 flex flex-col">
                     <p className="text-xs font-bold text-slate-200">Handmade Brine Jewelry</p>
                     <p className="text-[10px] font-mono text-purple-400 mt-0.5">TUZ SPL Wrapped</p>
                     <p className="text-[11px] text-slate-400 mt-1">Physical crystals etched under continuous pressure. Tied with NFC tags.</p>
+                    <div className="mt-2 rounded-lg overflow-hidden border border-slate-700 bg-slate-950 flex items-center justify-center">
+                      <img src={imgSaltPaprika} alt="Salt & Artisanal Spice Products" className="w-full h-28 object-contain" />
+                    </div>
                   </div>
                 </div>
 
@@ -1214,10 +1242,13 @@ export default function App() {
               {/* Box 2: TUZ Protocol Certification Mint Sandbox */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
-                    <Coins className="w-5 h-5 text-[#14F195]" />
-                    <span>TUZ Protocol On-Chain Assayer</span>
-                  </h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    <img src={imgTuzQA} alt="TUZ Quality Assurance" className="w-10 h-10 object-contain rounded-lg border border-teal-500/30 bg-teal-900/10 p-1" />
+                    <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
+                      <Coins className="w-5 h-5 text-[#14F195]" />
+                      <span>TUZ Protocol On-Chain Assayer</span>
+                    </h3>
+                  </div>
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                     Configure raw mining outputs, assay chemical purities, and deploy custom SPL tokens to satisfy European Battery Passport standards.
                   </p>
@@ -1295,7 +1326,7 @@ export default function App() {
           {/* D. If showing Industrial Precursors Tab */}
           {activeTab === "industrial" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               {/* Box 1: Industrial Pipeline Flow */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div>
@@ -1306,6 +1337,11 @@ export default function App() {
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                     Unifying resources across the region: Raw high-grade brine from **Tetima** is processed into pure soda ash (Na2CO3) and NaOH at the **Lukavac** / **Solana Tuzla** plants, formulating the fundamental precursors for Sodium-Ion battery cell manufacturing.
                   </p>
+
+                  {/* Salt for SOL visual banner */}
+                  <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950 flex items-center justify-center p-2">
+                    <img src={imgSaltForSol} alt="Salt for SOL Product" className="w-full max-h-36 object-contain" />
+                  </div>
 
                   {/* Flow Steps Graphic */}
                   <div className="flex flex-col gap-2 mt-5">
@@ -1355,9 +1391,8 @@ export default function App() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className={`p-1 px-1.5 rounded text-[10px] font-mono font-medium ${
-                            c.status === "Optimal" ? "text-emerald-400 bg-emerald-500/10" : "text-amber-400 bg-amber-500/10"
-                          }`}>
+                          <span className={`p-1 px-1.5 rounded text-[10px] font-mono font-medium ${c.status === "Optimal" ? "text-emerald-400 bg-emerald-500/10" : "text-amber-400 bg-amber-500/10"
+                            }`}>
                             {c.subsidenceRateMm.toFixed(1)} mm/yr
                           </span>
                           {!c.pressureBalanced && (
@@ -1386,7 +1421,7 @@ export default function App() {
           {/* E. If showing Investor Economics and Financial Sliders Tab */}
           {activeTab === "financial" && (
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
-              
+
               <div className="border-b border-slate-800 pb-4">
                 <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
                   <Sliders className="w-5 h-5 text-indigo-400" />
@@ -1399,7 +1434,7 @@ export default function App() {
 
               {/* Sliders Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 {/* Sliders Group */}
                 <div className="space-y-4">
                   <div>
@@ -1526,7 +1561,7 @@ export default function App() {
           {/* F. If showing Live Gemini AI Pitch Customizer */}
           {activeTab === "ai_tailor" && (
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
-              
+
               <div>
                 <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-[#14F195]" />
@@ -1539,7 +1574,7 @@ export default function App() {
 
               {/* Selector Panels */}
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                
+
                 {/* Left Side options Selection (5/12) */}
                 <div className="xl:col-span-4 space-y-4 flex flex-col justify-between">
                   <div className="space-y-3">
@@ -1549,11 +1584,10 @@ export default function App() {
                         <button
                           key={profile.id}
                           onClick={() => setSelectedInvestorId(profile.id)}
-                          className={`w-full p-2.5 rounded-lg border text-left flex items-start justify-between gap-2 transition-all-300 ${
-                            selectedInvestorId === profile.id
-                              ? "bg-slate-950 border-[#14F195]/40"
-                              : "bg-slate-950/30 border-slate-850 opacity-70 hover:opacity-100"
-                          }`}
+                          className={`w-full p-2.5 rounded-lg border text-left flex items-start justify-between gap-2 transition-all-300 ${selectedInvestorId === profile.id
+                            ? "bg-slate-950 border-[#14F195]/40"
+                            : "bg-slate-950/30 border-slate-850 opacity-70 hover:opacity-100"
+                            }`}
                         >
                           <div>
                             <p className="text-xs font-bold text-slate-100">{profile.name}</p>
@@ -1634,7 +1668,7 @@ export default function App() {
                 </div>
 
               </div>
-              
+
             </div>
           )}
 
@@ -1654,7 +1688,6 @@ export default function App() {
           <span>Bosnia World Cup 2026 Sports Album digital collector</span>
         </div>
       </footer>
-
     </div>
   );
 }
