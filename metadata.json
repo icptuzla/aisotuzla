@@ -1,0 +1,6 @@
+{
+  "name": "Tuzla Solana City Vision",
+  "description": "An interactive, high-fidelity presentation and simulation platform for the Tuzla Solana City project, bridging historical salt resources, clean Na-ion batteries, and Solana blockchain technology.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

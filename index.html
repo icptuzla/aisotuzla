@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Proactively define getter and setter on window.fetch if it's read-only to prevent browser extension and sandboxed iframe reference crashes
+      (function() {
+        try {
+          var originalFetch = window.fetch;
+          var fetchValue = originalFetch;
+          
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return fetchValue;
+            },
+            set: function(val) {
+              console.log('[System Shield] window.fetch overridden successfully:', val);
+              fetchValue = val;
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {
+          console.warn('[System Shield] Proactive window.fetch interception not possible directly, applying proxy fallback:', e);
+          try {
+            var proto = Object.getPrototypeOf(window) || Window.prototype;
+            if (proto) {
+              Object.defineProperty(proto, 'fetch', {
+                get: function() {
+                  return fetchValue;
+                },
+                set: function(val) {
+                  fetchValue = val;
+                },
+                configurable: true
+              });
+            }
+          } catch (err) {
+            console.warn('[System Shield] Fallback hook failed:', err);
+          }
+        }
+
+        // Keep standard error suppressor as second layer of defense
+        window.addEventListener('error', function(event) {
+          if (event.message && (
+            event.message.indexOf('fetch of #<Window>') > -1 ||
+            event.message.indexOf('Cannot set property fetch') > -1 ||
+            event.message.indexOf('property fetch of') > -1
+          )) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.warn('[System Shield] Suppressed external browser extension or iframe fetch override exception.');
+            return true;
+          }
+        }, true);
+      })();
+    </script>
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
