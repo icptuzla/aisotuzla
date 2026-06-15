@@ -43,11 +43,16 @@ import { TRANSLATIONS } from "./data/translations";
 import { BATTERY_METRICS, SODIUM_CATHODES, FAQ_DATA } from "./data/batteryComparisonData";
 import aisoRebuildImg from "./data/AISO REBUILD.png";
 import kenanToyImg from "./data/KenanToy.png";
+import kenanAlajbegovicWebp from "./data/kenan-alajbegovic.webp";
+import piDemirovicImg from "./data/Pi_Demirovic.webp";
+import piDzekoImg from "./data/Pi_dzeko.webp";
 import saltAndPaprikaImg from "./data/Salt and Paprika.png";
 import bathSaltSolImg from "./data/BathSaltSOL.png";
 import saltForSolImg from "./data/SaltForSOL.png";
+import solanaTuzlaImg from "./data/SOLanaTuzla.png";
 import solNft33Img from "./data/SOLNFT33.png";
 import logoAsQualityAssuranceTuzImg from "./data/LogoAsQualityAssuranceTUZ.png";
+import tuzProtocolQrImg from "./data/TUZ_ProtocolQR.png";
 import {
   TuzProtocolBatch,
   CavernState,
@@ -802,7 +807,7 @@ export default function App() {
                         </div>
                         <div className="mt-3 flex flex-col items-center">
                           <div className="w-full max-h-24 overflow-hidden rounded-lg border border-slate-800 bg-slate-950 p-1 relative flex items-center justify-center">
-                            <img src="/KenanAlajbegovic.png" referrerPolicy="no-referrer" alt="Kenan Digital Album Sticker" className="max-h-20 object-contain rounded" />
+                            <img src={kenanAlajbegovicWebp} referrerPolicy="no-referrer" alt="Kenan Digital Album Sticker" className="max-h-20 object-contain rounded" />
                           </div>
                           <p className="text-[9px] font-bold text-slate-200 mt-1 truncate max-w-full">Kenan Alajbegović (NFT)</p>
                         </div>
@@ -811,6 +816,18 @@ export default function App() {
                             <img src={kenanToyImg} referrerPolicy="no-referrer" alt="Kenan Collectible Toy Souvenir" className="max-h-20 object-contain rounded" />
                           </div>
                           <p className="text-[9px] font-bold text-slate-200 mt-1 truncate max-w-full">KenanToy (Gift)</p>
+                        </div>
+                        <div className="mt-3 flex flex-col items-center">
+                          <div className="w-full max-h-24 overflow-hidden rounded-lg border border-slate-800 bg-slate-950 p-1 relative flex items-center justify-center">
+                            <img src={piDemirovicImg} referrerPolicy="no-referrer" alt="Ermedin Demirović" className="max-h-20 object-contain rounded" />
+                          </div>
+                          <p className="text-[9px] font-bold text-slate-200 mt-1 truncate max-w-full">E. Demirović (NFT)</p>
+                        </div>
+                        <div className="mt-3 flex flex-col items-center">
+                          <div className="w-full max-h-24 overflow-hidden rounded-lg border border-slate-800 bg-slate-950 p-1 relative flex items-center justify-center">
+                            <img src={piDzekoImg} referrerPolicy="no-referrer" alt="Edin Džeko" className="max-h-20 object-contain rounded" />
+                          </div>
+                          <p className="text-[9px] font-bold text-slate-200 mt-1 truncate max-w-full">Edin Džeko (NFT)</p>
                         </div>
                       </div>
 
@@ -839,19 +856,16 @@ export default function App() {
                         })}
                       </div>
 
-                      <div className="border border-slate-800 p-3 rounded-lg bg-slate-900/50">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-slate-400">{language === "bs" ? "Uspješno Otključano:" : "Collectibles Unlocked:"}</span>
-                          <span className="font-mono font-bold text-slate-200">
-                            {unlockedPlayers.length + 1} / {BOSNIA_PLAYERS.length}
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-800 h-1 rounded-full mt-2 overflow-hidden">
-                          <div
-                            className="bg-[#14F195] h-full"
-                            style={{ width: `${((unlockedPlayers.length + 1) / BOSNIA_PLAYERS.length) * 100}%` }}
-                          />
-                        </div>
+                      <div className="border border-slate-800 p-3 rounded-lg bg-slate-900/50 flex justify-center">
+                        <a 
+                          href="https://bosnia-collection.vercel.app/" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[10px] sm:text-xs font-mono font-bold text-[#14F195] hover:text-white transition-colors flex items-center gap-2"
+                        >
+                          https://bosnia-collection.vercel.app/
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
                       </div>
 
                       <button
@@ -870,21 +884,21 @@ export default function App() {
                       {/* Interactive physical-digital salt product grid */}
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex flex-col items-center">
-                          <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
+                          <div className="w-full h-20 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
                             <img src={saltAndPaprikaImg} referrerPolicy="no-referrer" alt="Salt & Paprika" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "So i Crvena Paprika" : "Salt and Paprika"}</p>
                           <p className="text-[9px] font-mono text-[#14F195]">12 TUZ</p>
                         </div>
                         <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex flex-col items-center flex-1">
-                          <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
+                          <div className="w-full h-20 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
                             <img src={bathSaltSolImg} referrerPolicy="no-referrer" alt="Bath Salt SOL" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "Sol za kupanje SOL" : "Bath Salt SOL"}</p>
                           <p className="text-[9px] font-mono text-[#14F195]">15 TUZ</p>
                         </div>
                         <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex flex-col items-center flex-1">
-                          <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
+                          <div className="w-full h-20 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
                             <img src={saltForSolImg} referrerPolicy="no-referrer" alt="Salt for SOL" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "Kuhinjska So za SOL" : "Salt for SOL"}</p>
@@ -892,7 +906,7 @@ export default function App() {
                         </div>
                         <div className="bg-slate-900 border border-[#14F195]/30 p-2 rounded-xl flex flex-col items-center bg-indigo-950/20 relative">
                           <span className="absolute top-1 right-1 bg-yellow-500 text-slate-950 text-[7px] px-1 font-mono rounded font-bold uppercase tracking-wider scale-90">LTD</span>
-                          <div className="w-full h-18 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-indigo-900/60">
+                          <div className="w-full h-20 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-indigo-900/60">
                             <img src={solNft33Img} referrerPolicy="no-referrer" alt="Solana Special Limited Edition Pack" className="h-full object-contain" />
                           </div>
                           <p className="text-[10px] font-bold text-slate-200 mt-1 truncate max-w-full">{language === "bs" ? "So u Posebnom Solana Pakovanju" : "SOL NFT Limited Edition"}</p>
@@ -919,6 +933,9 @@ export default function App() {
                               ? "Fizički suvenir poslan investitorima sa kristalima slane rude iz Tuzle, sa scan-to-claim QR kodom za preuzimanje pratećih digitalnih tokena i NFT-ova na Solani."
                               : "Mailed physically to VCs containing premium vacuum crystal salt of Tuzla. Backed by a scan-to-claim NFT holding 100 TUZ tokens."}
                           </p>
+                          <div className="mt-3 w-full h-24 overflow-hidden rounded-lg bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
+                            <img src={solanaTuzlaImg} referrerPolicy="no-referrer" alt="Solana Tuzla Souvenir" className="h-full object-contain" />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -937,7 +954,7 @@ export default function App() {
                         </div>
                         <div className="flex flex-col items-center">
                           <div className="w-full h-24 overflow-hidden rounded-lg bg-indigo-900/10 flex items-center justify-center p-1.5 border border-indigo-500/20">
-                            <img src="/TUZ_ProtocolQR.png" referrerPolicy="no-referrer" alt="TUZ Protocol Investor Reach QR" className="h-full object-contain" />
+                            <img src={tuzProtocolQrImg} referrerPolicy="no-referrer" alt="TUZ Protocol Investor Reach QR" className="h-full object-contain" />
                           </div>
                           <p className="text-[9px] font-bold text-indigo-400 mt-1 uppercase font-mono">{language === "bs" ? "Skeniraj za Investiranje" : "Scan to Invest"}</p>
                         </div>
@@ -1231,32 +1248,44 @@ export default function App() {
               
               {/* Box 1: House of Salt Catalogue */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
-                  <Box className="w-5 h-5 text-amber-400" />
-                  <span>House of Salt Handicraft Store</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Tuzla derives from Turkish "tuz", translating literally to Salt. In Bosnian/Slavic, sol signifies salt, creating an organic symbiose with Solana L1 ($SOL token). We formulate products bridging both realms.
-                </p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
+                      <Box className="w-5 h-5 text-amber-400" />
+                      <span>House of Salt Handicraft Store</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                      Tuzla derives from Turkish "tuz", translating literally to Salt. In Bosnian/Slavic, sol signifies salt, creating an organic symbiose with Solana L1 ($SOL token). We formulate products bridging both realms.
+                    </p>
+                  </div>
+                  <div className="w-16 h-16 shrink-0 ml-4 bg-slate-950 border border-slate-800 rounded-lg p-1">
+                    <img src={saltAndPaprikaImg} alt="Salt and Paprika" className="w-full h-full object-contain" />
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-5">
-                  <div className="p-3 border border-slate-800 rounded bg-slate-950">
+                  <div className="p-3 border border-slate-800 rounded bg-slate-950 flex flex-col justify-center">
                     <p className="text-xs font-bold text-slate-200">Luxury Solana Salt Box</p>
                     <p className="text-[10px] font-mono text-[#14F195] mt-0.5">Mailed to Investors</p>
                     <p className="text-[11px] text-slate-400 mt-1">Solana themed packaging holding 1 kg raw vacuum crystal salts.</p>
                   </div>
-                  <div className="p-3 border border-slate-800 rounded bg-slate-950">
+                  <div className="p-3 border border-slate-800 rounded bg-slate-950 flex flex-col justify-center">
                     <p className="text-xs font-bold text-slate-200">Handmade Brine Jewelry</p>
                     <p className="text-[10px] font-mono text-purple-400 mt-0.5">TUZ SPL Wrapped</p>
                     <p className="text-[11px] text-slate-400 mt-1">Physical crystals etched under continuous pressure. Tied with NFC tags.</p>
                   </div>
                 </div>
 
-                <div className="mt-4 p-3 bg-gradient-to-r from-amber-500/10 to-indigo-500/10 text-xs border border-slate-800 rounded-lg">
-                  <p className="font-bold text-amber-400">Physical-to-Digital Bridge:</p>
-                  <p className="text-slate-350 mt-1 font-mono text-[11px]">
-                    Every souvenir carries an on-chain verification tag. Scanning confirms the physical geological origin at **Tetima** and authenticity.
-                  </p>
+                <div className="mt-4 p-3 bg-gradient-to-r from-amber-500/10 to-indigo-500/10 text-xs border border-slate-800 rounded-lg flex items-center gap-3">
+                  <div className="flex-1">
+                    <p className="font-bold text-amber-400">Physical-to-Digital Bridge:</p>
+                    <p className="text-slate-350 mt-1 font-mono text-[11px]">
+                      Every souvenir carries an on-chain verification tag. Scanning confirms the physical geological origin at **Tetima** and authenticity.
+                    </p>
+                  </div>
+                  <div className="w-16 h-16 shrink-0 rounded p-1 border border-indigo-500/30 bg-slate-900/50">
+                    <img src={tuzProtocolQrImg} alt="TUZ Protocol QR" className="w-full h-full object-contain" />
+                  </div>
                 </div>
               </div>
 
