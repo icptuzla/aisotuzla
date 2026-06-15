@@ -22,6 +22,8 @@ export interface TranslationSet {
   portalLink: string;
   tourLink: string;
   shopLink: string;
+  tuzProtocolLink: string;
+  bosniaCollectionLink: string;
 
   // Header HUD
   walletHud: string;
@@ -113,6 +115,8 @@ export const TRANSLATIONS: { en: TranslationSet; bs: TranslationSet } = {
     portalLink: "AISO Tuzla Portal",
     tourLink: "Tuzla Tour dApp",
     shopLink: "House of Salt Shop",
+    tuzProtocolLink: "TUZ Protocol Tracker 🔗",
+    bosniaCollectionLink: "Bosnia NFT Collection 🔗",
 
     walletHud: "SOLANA PWA WALLET",
     touristStatus: "TOURIST STATUS",
@@ -302,6 +306,8 @@ export const TRANSLATIONS: { en: TranslationSet; bs: TranslationSet } = {
     portalLink: "AISO Tuzla Portal",
     tourLink: "Tuzla Tour dApp",
     shopLink: "Kuća Soli Prodavnica",
+    tuzProtocolLink: "TUZ Protokol Praćenje 🔗",
+    bosniaCollectionLink: "Kolekcija NFT Bosna 🔗",
 
     walletHud: "SOLANA MOBILNI NOVČANIK",
     touristStatus: "TURISTIČKI STATUS",
