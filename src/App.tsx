@@ -831,30 +831,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2">
-                        {BOSNIA_PLAYERS.slice(0, 3).map((player) => {
-                          const isUnlocked = unlockedPlayers.includes(player.id) || player.id === "p_1";
-                          return (
-                            <div
-                              key={player.id}
-                              className={`p-2 rounded-lg border text-center relative ${
-                                isUnlocked
-                                  ? "bg-slate-905 border-[#14F195]/40"
-                                  : "bg-slate-950/20 border-slate-850 opacity-50"
-                              }`}
-                            >
-                              <div className="text-[10px] font-mono text-[#14F195] bg-[#14F195]/5 px-1 rounded-full absolute top-1 right-1">
-                                {player.grade}
-                              </div>
-                              <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-xs font-bold text-indigo-400 mt-2 font-mono">
-                                {player.number}
-                              </div>
-                              <p className="text-xs font-semibold text-slate-100 truncate mt-1">{player.name}</p>
-                              <p className="text-[9px] font-mono text-slate-500 mt-0.5 truncate">{player.position} | {player.mintAddress}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
+
 
                       <div className="border border-slate-800 p-3 rounded-lg bg-slate-900/50 flex justify-center">
                         <a 
