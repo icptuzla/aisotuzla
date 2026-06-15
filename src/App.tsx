@@ -709,7 +709,7 @@ export default function App() {
 
                       {/* Floating Tour Logo Emblem in Map View */}
                       <div className="absolute top-16 right-4 w-12 h-12 rounded-full border border-yellow-500/30 bg-slate-900/90 p-1 flex items-center justify-center shadow-lg group pointer-events-none select-none">
-                        <img src="/TuzlaTourLogo.png" alt="Tour Logo" className="w-10 h-10 object-contain rounded-full" />
+                        <img src={imgTourLogo} alt="Tour Logo" className="w-10 h-10 object-contain rounded-full" />
                       </div>
 
                       <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-lg">
