@@ -48,7 +48,6 @@ import bathSaltSolImg from "./data/BathSaltSOL.png";
 import saltForSolImg from "./data/SaltForSOL.png";
 import solNft33Img from "./data/SOLNFT33.png";
 import logoAsQualityAssuranceTuzImg from "./data/LogoAsQualityAssuranceTUZ.png";
-import imgTourLogo from "./data/LogoTuzlaTourApp.png";
 import {
   TuzProtocolBatch,
   CavernState,
@@ -92,7 +91,7 @@ export default function App() {
   // Gigafactory Pipeline States
   const [enableHydroFlow, setEnableHydroFlow] = useState<boolean>(true);
   const [enableRecycledHeat, setEnableRecycledHeat] = useState<boolean>(true);
-
+  
   // Cavern stabilization states
   const [cavernList, setCavernList] = useState<CavernState[]>(CAVERNS);
   const [stablizingId, setStabilizingId] = useState<string | null>(null);
@@ -176,7 +175,7 @@ export default function App() {
     const baseMargin = 12; // base margin
     const netMargin = Math.min(22, baseMargin + carbonTaxSavingsRatio * 150); // capped at 22%
     const annualEbitda = (totalRevenue * netMargin) / 100;
-
+    
     // IRR correlates with Net margins and scale
     const irr = 15 + (netMargin - baseMargin) * 2 + (scale * 0.8);
     const jobs = Math.round(scale * 70 + (tpyBrine / 2000)); // 70 direct jobs per GWh, rest in mining
@@ -197,18 +196,18 @@ export default function App() {
     setUserXp((prev) => prev + xp);
     setTuzBalance((prev) => prev + xp / 10);
     setSolBalance((prev) => parseFloat((prev + 0.05).toFixed(2))); // minor faucet incentive
-
+    
     // Unlock matching player card
     const randomPlayer = BOSNIA_PLAYERS.find(p => !unlockedPlayers.includes(p.id));
     if (randomPlayer) {
       setUnlockedPlayers((prev) => [...prev, randomPlayer.id]);
-      setScanMessage(language === "bs"
+      setScanMessage(language === "bs" 
         ? `📍 Provjera Lokacije Uspješna! Otključana sportska NFT kartica: ${randomPlayer.name} (#${randomPlayer.number})! TX potpis: sol_tg_${Date.now().toString(36)}`
         : `📍 Checkpoint Scanned! Unlocked Bosnian WC '26 Sports NFT: ${randomPlayer.name} (#${randomPlayer.number})! Generated TX signature: sol_tg_${Date.now().toString(36)}`);
     } else {
       setScanMessage(language === "bs"
-        ? `📍 Provjera Lokacije Uspješna! Osvojene nagrade: +${xp} XP i +${xp / 10} TUZ!`
-        : `📍 Checkpoint Scanned! Earned rewards: +${xp} XP & +${xp / 10} TUZ!`);
+        ? `📍 Provjera Lokacije Uspješna! Osvojene nagrade: +${xp} XP i +${xp/10} TUZ!`
+        : `📍 Checkpoint Scanned! Earned rewards: +${xp} XP & +${xp/10} TUZ!`);
     }
 
     setTimeout(() => {
@@ -238,13 +237,28 @@ export default function App() {
     }, 2000);
   };
 
+  // A highly resilient helper to fetch and parse response JSON without throwing uncaught "undefined" or malformed exceptions.
+  const safeFetchJson = async (url: string, options?: RequestInit) => {
+    try {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      if (!text || text.trim() === "" || text === "undefined") {
+        return { success: false, error: "Empty or undefined response" };
+      }
+      return JSON.parse(text);
+    } catch (err) {
+      console.warn(`[SafeFetch] Failed parsing JSON from ${url}:`, err);
+      return { success: false, error: String(err) };
+    }
+  };
+
   // Simulate on-chain tokenization with authentic responses
   const mintOnSolana = async () => {
     setIsMinting(true);
     setMintReport("");
-
+    
     try {
-      const response = await fetch("/api/blockchain/mint", {
+      const data = await safeFetchJson("/api/blockchain/mint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -253,9 +267,8 @@ export default function App() {
           purity: customPurity
         })
       });
-      const data = await response.json();
-
-      if (data.success) {
+      
+      if (data && data.success) {
         const newBatch: TuzProtocolBatch = {
           batchId: `TUZ-${selectedSource.split(" ").slice(-1)[0]}-${Date.now().toString().substring(9)}`,
           timestamp: new Date().toISOString(),
@@ -268,10 +281,12 @@ export default function App() {
           onChainTx: data.txSignature,
           esgRating: customPurity >= 99.9 && enableHydroFlow ? "AAA" : "AA"
         };
-
+        
         setCertifiedBatches((prev) => [newBatch, ...prev]);
         setTuzBalance((prev) => prev + 50); // Rewards on Solana
         setMintReport(`Batch ${newBatch.batchId} successfully tokenized! Recieved ${newBatch.classification} certification. Signature: ${data.txSignature}`);
+      } else {
+        throw new Error(data?.error || "Execution failed");
       }
     } catch (e: any) {
       console.error(e);
@@ -290,7 +305,7 @@ export default function App() {
     setTailoredPitch("");
 
     try {
-      const response = await fetch("/api/pitch/tailor", {
+      const data = await safeFetchJson("/api/pitch/tailor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -299,13 +314,14 @@ export default function App() {
           customQuestion: customQuestion
         })
       });
-      const data = await response.json();
-      if (data.pitch) {
+      if (data && data.pitch) {
         setTailoredPitch(data.pitch);
         setRecentPitches((prev) => ({
           ...prev,
           [selectedInvestorId]: data.pitch
         }));
+      } else {
+        throw new Error(data?.error || "Strategic Pitch compilation engine returned empty payload");
       }
     } catch (e: any) {
       console.error(e);
@@ -352,7 +368,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-slate-100 font-sans ambient-bg p-4 md:p-6 flex flex-col justify-between">
-
+      
       {/* 1. Header Navigation Bar */}
       <header className="w-full max-w-7xl mx-auto border-b border-slate-800 pb-5 mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -366,16 +382,18 @@ export default function App() {
             <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-0.5 select-none shrink-0" id="lang-switcher">
               <button
                 onClick={() => setLanguage("en")}
-                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${language === "en" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
-                  }`}
+                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${
+                  language === "en" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
+                }`}
                 id="lang-selector-en"
               >
                 EN
               </button>
               <button
                 onClick={() => setLanguage("bs")}
-                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${language === "bs" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
-                  }`}
+                className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded transition ${
+                  language === "bs" ? "bg-indigo-600 text-white" : "text-slate-500 hover:text-white"
+                }`}
                 id="lang-selector-bs"
               >
                 BS
@@ -386,8 +404,8 @@ export default function App() {
             Tuzla Solana City <span className="font-light text-slate-400">{language === "bs" ? "Centar Vizije" : "Vision Hub"}</span>
           </h1>
           <p className="text-xs text-slate-400 font-mono mt-0.5">
-            {language === "bs"
-              ? "Faza I-III Bankabilna Industrijska Izmjena i Solana Web3 Simbioza"
+            {language === "bs" 
+              ? "Faza I-III Bankabilna Industrijska Izmjena i Solana Web3 Simbioza" 
               : "Phase I-III Bankable Industrial Transformation & Solana Web3 Symbiosis"}
           </p>
         </div>
@@ -422,27 +440,29 @@ export default function App() {
 
       {/* 2. Main Content Grid - Vertical/Horizontal Tabs Layout */}
       <main className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-grow">
-
+        
         {/* Navigation Sidebar Panel (ColumnSpan 3) */}
         <nav className="col-span-1 lg:col-span-3 flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-2 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/80 sticky top-4 z-40">
           <button
             onClick={() => setActiveTab("deck")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "deck"
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
+              activeTab === "deck"
                 ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/15"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              }`}
+            }`}
             id="nav-deck"
           >
             <Layers className="w-4 h-4" />
             <span>{t.deck}</span>
           </button>
-
+          
           <button
             onClick={() => setActiveTab("digital")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "digital"
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
+              activeTab === "digital"
                 ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              }`}
+            }`}
             id="nav-digital"
           >
             <Globe2 className="w-4 h-4" />
@@ -451,10 +471,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("physical")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "physical"
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
+              activeTab === "physical"
                 ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              }`}
+            }`}
             id="nav-physical"
           >
             <Box className="w-4 h-4" />
@@ -463,10 +484,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("industrial")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "industrial"
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
+              activeTab === "industrial"
                 ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              }`}
+            }`}
             id="nav-industrial"
           >
             <Cpu className="w-4 h-4" />
@@ -475,10 +497,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("financial")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "financial"
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
+              activeTab === "financial"
                 ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              }`}
+            }`}
             id="nav-financial"
           >
             <Sliders className="w-4 h-4" />
@@ -487,10 +510,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("ai_tailor")}
-            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${activeTab === "ai_tailor"
+            className={`flex items-center gap-3 text-sm px-4 py-3 rounded-lg font-medium whitespace-nowrap transition-all-300 w-full ${
+              activeTab === "ai_tailor"
                 ? "bg-gradient-to-r from-slate-700 to-slate-800 text-[#14F195] border border-[#14F195]/20 shadow-md"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              }`}
+            }`}
             id="nav-ai-tailor"
           >
             <Sparkles className="w-4 h-4 text-[#14F195]" />
@@ -553,11 +577,11 @@ export default function App() {
 
         {/* Showcase / Workstation Arena (ColumnSpan 9) */}
         <section className="col-span-1 lg:col-span-9 grid grid-cols-1 gap-6">
-
+          
           {/* A. If showing Master Pitch Slides Tab */}
           {activeTab === "deck" && (
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 bg-slate-900/30 p-1 rounded-2xl">
-
+              
               {/* Left Side: Presentation Card (6/12 columns) */}
               <div className="xl:col-span-7 bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl flex flex-col justify-between min-h-[500px]">
                 <div>
@@ -601,8 +625,9 @@ export default function App() {
                       <button
                         key={idx}
                         onClick={() => jumpToSlide(idx)}
-                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 shrink-0 ${currentSlideIndex === idx ? "bg-[#14F195] w-6" : "bg-slate-700 hover:bg-slate-500"
-                          }`}
+                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 shrink-0 ${
+                          currentSlideIndex === idx ? "bg-[#14F195] w-6" : "bg-slate-700 hover:bg-slate-500"
+                        }`}
                         title={`Go to Slide ${idx + 1}`}
                       />
                     ))}
@@ -618,7 +643,7 @@ export default function App() {
                       <ArrowLeft className="w-4 h-4" />
                       <span className="text-xs font-mono">{t.prev}</span>
                     </button>
-
+                    
                     <button
                       onClick={handleNextSlide}
                       disabled={currentSlideIndex === PRESENTATION_SLIDES.length - 1}
@@ -634,7 +659,7 @@ export default function App() {
 
               {/* Right Side: Animated Real-time Map and Simulator HUD (5/12 columns) */}
               <div className="xl:col-span-5 bg-slate-950/90 border border-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between overflow-hidden relative">
-
+                
                 {/* Header Badge */}
                 <div className="p-4 border-b border-slate-800/60 bg-slate-900/30 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
@@ -648,7 +673,7 @@ export default function App() {
 
                 {/* Simulated Content Area that updates depending on what slide is selected */}
                 <div className="p-6 flex-grow flex flex-col justify-center">
-
+                  
                   {/* Visualizer 1: Interactive GIS Map */}
                   {currentSlide.visualId === "map" && (
                     <div className="space-y-4">
@@ -656,7 +681,7 @@ export default function App() {
                         <span>{t.gpsTarget}</span>
                         <span className="text-[#14F195]">{hoveredCoords}</span>
                       </div>
-
+                      
                       {/* Customized Tuzla SVG Blueprint Map Card */}
                       <div className="border border-slate-800 rounded-xl relative p-1.5 overflow-hidden group bg-slate-950">
                         <svg viewBox="0 0 400 250" className="w-full h-auto text-slate-600 bg-slate-950 rounded-lg">
@@ -710,12 +735,12 @@ export default function App() {
                           <text x="290" y="115" fill="#a5f3fc" fontSize="8" fontFamily="font-mono">{language === "bs" ? "Panonska Jezera" : "Pannonian Lakes"}</text>
                         </svg>
                       </div>
-
+                      
                       {/* Floating Tour Logo Emblem in Map View */}
                       <div className="absolute top-16 right-4 w-12 h-12 rounded-full border border-yellow-500/30 bg-slate-900/90 p-1 flex items-center justify-center shadow-lg group pointer-events-none select-none">
-                        <img src={imgTourLogo} alt="LogoTuzlaTour" className="w-10 h-10 object-contain rounded-full" />
+                        <img src="/TuzlaTourLogo.png" alt="Tour Logo" className="w-10 h-10 object-contain rounded-full" />
                       </div>
-
+                      
                       <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-lg">
                         <p className="text-[10px] font-mono text-[#14F195] uppercase font-bold">{t.mapGuideTitle}</p>
                         <p className="text-xs text-slate-350 mt-1">
@@ -729,11 +754,11 @@ export default function App() {
                   {currentSlide.visualId === "aiso" && (
                     <div className="space-y-4">
                       <div className="relative border border-slate-800 rounded-xl overflow-hidden group bg-slate-950 shadow-md">
-                        <img
-                          src={aisoRebuildImg}
+                        <img 
+                          src={aisoRebuildImg} 
                           referrerPolicy="no-referrer"
-                          alt="AISO Rebuild"
-                          className="w-full h-24 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-500"
+                          alt="AISO Rebuild" 
+                          className="w-full h-24 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-500" 
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-2 md:p-3">
                           <span className="text-[9px] bg-indigo-600 text-white font-mono px-2 py-0.5 rounded-md w-max border border-indigo-500/30 uppercase font-bold tracking-wider">
@@ -795,10 +820,11 @@ export default function App() {
                           return (
                             <div
                               key={player.id}
-                              className={`p-2 rounded-lg border text-center relative ${isUnlocked
+                              className={`p-2 rounded-lg border text-center relative ${
+                                isUnlocked
                                   ? "bg-slate-905 border-[#14F195]/40"
                                   : "bg-slate-950/20 border-slate-850 opacity-50"
-                                }`}
+                              }`}
                             >
                               <div className="text-[10px] font-mono text-[#14F195] bg-[#14F195]/5 px-1 rounded-full absolute top-1 right-1">
                                 {player.grade}
@@ -889,7 +915,7 @@ export default function App() {
                         <div className="max-w-sm">
                           <h4 className="text-xs font-mono font-bold text-slate-200">{language === "bs" ? "Fizički Solana \"Sol\" Suvenir" : "The Solana \"Sol\" / \"Solana\" Souvenir"}</h4>
                           <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
-                            {language === "bs"
+                            {language === "bs" 
                               ? "Fizički suvenir poslan investitorima sa kristalima slane rude iz Tuzle, sa scan-to-claim QR kodom za preuzimanje pratećih digitalnih tokena i NFT-ova na Solani."
                               : "Mailed physically to VCs containing premium vacuum crystal salt of Tuzla. Backed by a scan-to-claim NFT holding 100 TUZ tokens."}
                           </p>
@@ -928,16 +954,16 @@ export default function App() {
                             <p className="text-slate-200 font-mono text-sm">REG-2023-1542</p>
                           </div>
                         </div>
-
+                        
                         <div className="border border-slate-800 rounded p-2.5 bg-slate-950 text-xs text-slate-300 font-mono leading-relaxed">
                           <span className="text-indigo-400">"attributes"</span>: [
-                          <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"origin"</span>: "Tetima Deep Well"{"}"},
-                          <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"purity_level"</span>: "99.95% NaCl"{"}"},
-                          <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"carbon_kg"</span>: "0.08 kgCO2"{"}"}
-                          <br />]
+                            <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"origin"</span>: "Tetima Deep Well"{"}"},
+                            <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"purity_level"</span>: "99.95% NaCl"{"}"},
+                            <br />&nbsp;&nbsp;{"{"}<span className="text-[#14F195]">"carbon_kg"</span>: "0.08 kgCO2"{"}"}
+                            <br />]
                         </div>
                       </div>
-
+                      
                       <button
                         onClick={() => setActiveTab("physical")}
                         className="w-full text-center text-xs text-indigo-400 hover:text-indigo-300 flex items-center justify-center gap-1 bg-indigo-500/10 py-2.5 rounded-lg border border-indigo-500/20"
@@ -1009,7 +1035,7 @@ export default function App() {
                           <span className="text-slate-400 font-mono">DOME SUB-RADAR SAT:</span>
                           <span className="text-[#14F195] animate-pulse">Telemetry Live</span>
                         </div>
-
+                        
                         {/* Interactive sonar waves */}
                         <div className="h-28 bg-slate-900 rounded-lg flex items-center justify-center relative overflow-hidden border border-slate-800">
                           {/* Circle radar rings */}
@@ -1019,7 +1045,7 @@ export default function App() {
                           {/* Crosshair grids */}
                           <div className="absolute inset-x-0 top-1/2 h-px bg-slate-800"></div>
                           <div className="absolute inset-y-0 left-1/2 w-px bg-slate-800"></div>
-
+                          
                           <span className="absolute bottom-2 left-2 text-[8px] font-mono text-slate-500">InSAR FEED // REF: TETIMA-V1</span>
                         </div>
                       </div>
@@ -1100,7 +1126,7 @@ export default function App() {
           {/* B. If showing Digital AISO & Tour App Tab */}
           {activeTab === "digital" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+              
               {/* Box 1: AISO Structured Schema Sandbox */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div>
@@ -1111,7 +1137,7 @@ export default function App() {
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                     By providing structured schema.org blocks (JSON-LD), we make local Tuzla attractions discoverable by AI search agents. Standard SEO targets keywords; AI optimization targets semantically structured truth.
                   </p>
-
+                  
                   <div className="space-y-3.5 mt-5">
                     <div>
                       <label className="text-[10px] font-mono text-slate-400 block mb-1 uppercase">Landmark/Business Name</label>
@@ -1202,7 +1228,7 @@ export default function App() {
           {/* C. If showing Physical Souvenirs & TUZ Tab */}
           {activeTab === "physical" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+              
               {/* Box 1: House of Salt Catalogue */}
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
                 <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
@@ -1319,549 +1345,557 @@ export default function App() {
           {activeTab === "industrial" && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Box 1: Industrial Pipeline Flow */}
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div>
+                  <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
+                    <Factory className="w-5 h-5 text-[#14F195]" />
+                    <span>Circular Resource Pipeline</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Unifying resources across the region: Raw high-grade brine from **Tetima** is processed into pure soda ash (Na2CO3) and NaOH at the **Lukavac** / **Solana Tuzla** plants, formulating the fundamental precursors for Sodium-Ion battery cell manufacturing.
+                  </p>
 
-                {/* Box 1: Industrial Pipeline Flow */}
-                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
-                      <Factory className="w-5 h-5 text-[#14F195]" />
-                      <span>Circular Resource Pipeline</span>
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                      Unifying resources across the region: Raw high-grade brine from **Tetima** is processed into pure soda ash (Na2CO3) and NaOH at the **Lukavac** / **Solana Tuzla** plants, formulating the fundamental precursors for Sodium-Ion battery cell manufacturing.
-                    </p>
-
-                    {/* Flow Steps Graphic */}
-                    <div className="flex flex-col gap-2 mt-5">
-                      <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
-                        <span className="text-amber-500">1. Sub-surface Mining:</span>
-                        <span>Tetima Salt Dome (Feedstock)</span>
-                      </div>
-                      <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
-                        <span className="text-indigo-500">2. Refining Evaporators:</span>
-                        <span>Solana d.d. vacuum facility</span>
-                      </div>
-                      <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
-                        <span className="text-pink-500">3. Precursor compound:</span>
-                        <span>Lukavac Soda soda ash loop</span>
-                      </div>
-                      <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
-                        <span className="text-emerald-500">4. Battery Passport export:</span>
-                        <span>EU Green Manufacturer</span>
-                      </div>
+                  {/* Flow Steps Graphic */}
+                  <div className="flex flex-col gap-2 mt-5">
+                    <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
+                      <span className="text-amber-500">1. Sub-surface Mining:</span>
+                      <span>Tetima Salt Dome (Feedstock)</span>
                     </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-850 flex justify-between items-center text-xs text-slate-400">
-                    <span>Powering source:</span>
-                    <span className="text-indigo-400 font-mono font-bold">Lake Modrac Gravitational Flow</span>
+                    <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
+                      <span className="text-indigo-500">2. Refining Evaporators:</span>
+                      <span>Solana d.d. vacuum facility</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
+                      <span className="text-pink-500">3. Precursor compound:</span>
+                      <span>Lukavac Soda soda ash loop</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-950 rounded border border-slate-850 flex justify-between text-xs font-mono">
+                      <span className="text-emerald-500">4. Battery Passport export:</span>
+                      <span>EU Green Manufacturer</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Box 2: Geomechanical Cavern Subsidence Monitor */}
-                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
-                      <ShieldAlert className="w-5 h-5 text-[#14F195]" />
-                      <span>Geomechanical Cavern HUD Monitor</span>
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                      Subsidence elimination: Mining over-extraction in downtown Tuzla in the 1980s caused land subsidence. At Tetima, continuous geomechanical sonar, pressure, and InSAR satellite tracking keeps subsidence permanently below 5mm thresholds.
-                    </p>
-
-                    <div className="space-y-2 mt-5">
-                      {cavernList.map((c) => (
-                        <div key={c.id} className="p-2.5 rounded bg-slate-950 border border-slate-850 flex items-center justify-between gap-3 text-xs">
-                          <div>
-                            <p className="font-bold text-slate-350">{c.name}</p>
-                            <p className="text-[10px] font-mono text-slate-500">
-                              Depth: {c.depthRange} | Pres: {c.pressureBar} bar
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <span className={`p-1 px-1.5 rounded text-[10px] font-mono font-medium ${c.status === "Optimal" ? "text-emerald-400 bg-emerald-500/10" : "text-amber-400 bg-amber-500/10"
-                              }`}>
-                              {c.subsidenceRateMm.toFixed(1)} mm/yr
-                            </span>
-                            {!c.pressureBalanced && (
-                              <button
-                                onClick={() => balanceCavern(c.id)}
-                                disabled={stablizingId === c.id}
-                                className="block mt-1 font-mono text-[9px] text-[#14F195] underline hover:text-white"
-                              >
-                                {stablizingId === c.id ? "STABILIZING..." : "BALANCE WELL"}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-850 text-center text-[10px] font-mono text-slate-500 font-medium">
-                    InSAR TRACKING SYSTEM // MAXIMUM Displacement: &lt; 5.0mm
-                  </div>
+                <div className="mt-4 pt-3 border-t border-slate-850 flex justify-between items-center text-xs text-slate-400">
+                  <span>Powering source:</span>
+                  <span className="text-indigo-400 font-mono font-bold">Lake Modrac Gravitational Flow</span>
                 </div>
-
               </div>
 
-              {/* F. SIB vs Li-ion Comparative Research Hub (Full Width) */}
-              <div className="mt-8 space-y-8">
-                <div className="bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+              {/* Box 2: Geomechanical Cavern Subsidence Monitor */}
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div>
+                  <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-[#14F195]" />
+                    <span>Geomechanical Cavern HUD Monitor</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Subsidence elimination: Mining over-extraction in downtown Tuzla in the 1980s caused land subsidence. At Tetima, continuous geomechanical sonar, pressure, and InSAR satellite tracking keeps subsidence permanently below 5mm thresholds.
+                  </p>
 
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-5 gap-4">
-                    <div>
-                      <span className="p-1 px-2 rounded bg-[#14F195]/15 text-[#14F195] text-[10px] font-mono tracking-wider font-bold uppercase">
-                        {language === "bs" ? "NAUČNO PREISPITIVANJE" : "SCIENTIFIC PEER COGNITION"}
-                      </span>
-                      <h2 className="text-xl md:text-2xl font-display font-medium text-white flex items-center gap-2 mt-2">
-                        <Zap className="w-6 h-6 text-[#14F195] animate-pulse" />
-                        <span>
-                          {language === "bs"
-                            ? "SIB vs Litijum: Interaktivno Uporedno Istraživanje"
-                            : "Sodium-Ion vs Lithium-Ion: Multi-Dimensional Research Hub"}
-                        </span>
-                      </h2>
-                      <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                        {language === "bs"
-                          ? "Tehničke, ekonomske i geopolitičke komparativne analize. Istražite zašto Tuzla i Solana blockchain grade bankabilni preduslovni lanac za novu eru natrijum-jonskih baterija."
-                          : "State-of-the-art comparative physics and mineral cost-structures. Explore how Tuzla's Tetima reserves position the TUZ Protocol as a global pillar for upcoming sodium-ion commercial deployments."}
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setSelectedBatteryType("sodium")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${selectedBatteryType === "sodium"
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                            : "bg-slate-905 text-slate-400 border border-slate-800 hover:text-white"
-                          }`}
-                      >
-                        {language === "bs" ? "Natrijum-jonske (SIB)" : "Sodium-Ion (SIB)"}
-                      </button>
-                      <button
-                        onClick={() => setSelectedBatteryType("lfp")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${selectedBatteryType === "lfp"
-                            ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40"
-                            : "bg-slate-905 text-slate-400 border border-slate-800 hover:text-white"
-                          }`}
-                      >
-                        Lithium LFP
-                      </button>
-                      <button
-                        onClick={() => setSelectedBatteryType("nmc")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${selectedBatteryType === "nmc"
-                            ? "bg-pink-500/20 text-pink-400 border border-pink-500/40"
-                            : "bg-slate-905 text-slate-400 border border-slate-800 hover:text-white"
-                          }`}
-                      >
-                        Lithium NMC
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Grid layout for comparison and details */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-
-                    {/* Table Column (Takes 2 grid spaces on desktop) */}
-                    <div className="lg:col-span-2 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono">
-                          {language === "bs" ? "📑 Tehnološko-Ekonomska Matrica poređenja" : "📑 Technological & Cost Structure Matrix"}
-                        </h3>
-                        <span className="text-[10px] font-mono text-slate-500">
-                          {language === "bs" ? "Ažurirano 2026 // Bonnen Battery" : "2026 Scientific Data // Bonnen Battery Source"}
-                        </span>
-                      </div>
-
-                      <div className="border border-slate-850 rounded-xl overflow-hidden bg-slate-1000">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs">
-                            <thead>
-                              <tr className="bg-slate-900/80 border-b border-slate-850 text-[10px] text-slate-400 font-mono uppercase font-semibold">
-                                <th className="p-3">{language === "bs" ? "Parametar" : "Metric Factor"}</th>
-                                <th className="p-3">Lithium LFP</th>
-                                <th className="p-3">Lithium NMC</th>
-                                <th className="p-3 text-emerald-400">{language === "bs" ? "Natrijum-jonska (TUZ)" : "Sodium-ion (TUZ)"}</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-900 font-mono">
-                              {BATTERY_METRICS.map((metricRow, idx) => (
-                                <tr
-                                  key={idx}
-                                  className={`hover:bg-slate-900/40 transition-colors ${metricRow.highlight ? "bg-indigo-950/10 text-slate-100" : "text-slate-350"
-                                    }`}
-                                >
-                                  <td className="p-3 font-medium text-slate-200">
-                                    {language === "bs" ? metricRow.metric.bs : metricRow.metric.en}
-                                  </td>
-                                  <td className="p-3">{language === "bs" ? metricRow.lfp.bs : metricRow.lfp.en}</td>
-                                  <td className="p-3">{language === "bs" ? metricRow.nmc.bs : metricRow.nmc.en}</td>
-                                  <td className="p-3 text-emerald-400 font-semibold bg-emerald-950/5">
-                                    {language === "bs" ? metricRow.sodium.bs : metricRow.sodium.en}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                  <div className="space-y-2 mt-5">
+                    {cavernList.map((c) => (
+                      <div key={c.id} className="p-2.5 rounded bg-slate-950 border border-slate-850 flex items-center justify-between gap-3 text-xs">
+                        <div>
+                          <p className="font-bold text-slate-350">{c.name}</p>
+                          <p className="text-[10px] font-mono text-slate-500">
+                            Depth: {c.depthRange} | Pres: {c.pressureBar} bar
+                          </p>
                         </div>
-                      </div>
-
-                      {/* Proactive shipping note */}
-                      <p className="text-[10px] font-mono text-slate-500 leading-normal bg-slate-950 p-2.5 rounded border border-slate-900">
-                        ⚠️ <strong>{language === "bs" ? "Logistička napomena:" : "Logistics Insight:"}</strong>{" "}
-                        {language === "bs"
-                          ? "Litijumske baterije spadaju u opasnu klasu zrakoplovnog transporta (Hazmat Class 9). Natrijum-jonske ćelije se mogu potpuno isprazniti na 0 volti bez oštećenja, što uklanja rizik od termalnog proboja, dramatično pojeftinjujući globalni kargo transport."
-                          : "Lithium cells are classified as hazardous freight requiring special packaging and increased shipping rates. In contrast, SIBs can be completely discharged to 0V for secure transport, entirely neutralizing air freights thermal runaway hazards."}
-                      </p>
-                    </div>
-
-                    {/* Active detailed card column side-by-side */}
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono">
-                        {language === "bs" ? "🔎 Detaljni Fokus Ćelije" : "🔎 Focus Chemistry Insight"}
-                      </h3>
-
-                      <div className="bg-slate-950 rounded-xl border border-slate-850 p-4 space-y-4">
-                        {selectedBatteryType === "sodium" && (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between pb-2 border-b border-slate-900">
-                              <span className="text-emerald-400 font-semibold text-sm">Sodium-Ion (TUZ / Salt)</span>
-                              <span className="p-1 px-1.5 bg-emerald-500/10 text-emerald-400 rounded text-[9px] font-bold">ABUNDANT & CHEAP</span>
-                            </div>
-
-                            <div className="space-y-2">
-                              <p className="text-xs text-slate-400">
-                                {language === "bs"
-                                  ? "Kombinuje sirovi natrijum i ekološke spojeve prusko bijelog ili slojevitih oksida. Zamjenjuje skupi litijum i u potpunosti eliminiše kobalt i nikl."
-                                  : "Employs simple sodium carbonate and safe Prussian white/iron precursors. Eliminates expensive lithium, cobalt, and nickel dependence entirely."}
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] font-mono">
-                                <div className="bg-slate-900 p-2 rounded">
-                                  <span className="block text-slate-500">PROS:</span>
-                                  <span className="text-emerald-400 font-semibold">
-                                    {language === "bs" ? "Jeftino, Hladno, Brz upad" : "Ultra cheap, -40°C performance, 15m Fast Charge"}
-                                  </span>
-                                </div>
-                                <div className="bg-slate-900 p-2 rounded">
-                                  <span className="block text-slate-500">CONS:</span>
-                                  <span className="text-amber-400 font-semibold">
-                                    {language === "bs" ? "Niža gustoća, težina" : "Lower energy density, heavier packs"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="pt-2 border-t border-slate-905">
-                              <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-500 mb-1.5">
-                                {language === "bs" ? "Geopolitički Položaj:" : "Geopolitical Leverage:"}
-                              </span>
-                              <p className="text-[11px] text-slate-300 leading-normal">
-                                {language === "bs"
-                                  ? "Natrijum pokriva 2,6% Zemljine kore (soli ima svuda). Za razliku od litijuma čiji je geopolitički lanac monopolizovan, natrijum omogućava Evropi i regiji Tuzle potpunu energetsku autonomiju."
-                                  : "Sodium resides across 2.6% of Earth's crust (omnipresent in salt reserves). Provides democratic sovereign supply lines, shielding European energy grids from highly protective Lithium export cartels."}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedBatteryType === "lfp" && (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between pb-2 border-b border-slate-900">
-                              <span className="text-indigo-400 font-semibold text-sm">Lithium LFP (LiFePO₄)</span>
-                              <span className="p-1 px-1.5 bg-indigo-500/10 text-indigo-400 rounded text-[9px] font-bold">STABLE WORKHORSE</span>
-                            </div>
-
-                            <div className="space-y-2">
-                              <p className="text-xs text-slate-400">
-                                {language === "bs"
-                                  ? "Najstabilnija komercijalna litijumska hemija. Koristi gvožđe-fosfat, što smanjuje rizik od zapaljenja ali ima ograničenu energetsku gustinu."
-                                  : "The standard stable commercial lithium chemistry. Utilizes iron-phosphate, eliminating high-hazard cobalt, though showing limited energy density growth."}
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] font-mono">
-                                <div className="bg-slate-900 p-2 rounded">
-                                  <span className="block text-slate-500">PROS:</span>
-                                  <span className="text-emerald-400 font-semibold">
-                                    {language === "bs" ? "Dug vijek, siguran" : "3000+ cycles, proven production"}
-                                  </span>
-                                </div>
-                                <div className="bg-slate-900 p-2 rounded">
-                                  <span className="block text-slate-500">CONS:</span>
-                                  <span className="text-amber-400 font-semibold">
-                                    {language === "bs" ? "Slabo na hladnoći" : "Severe performance drop in sub-zero temp"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="pt-2 border-t border-slate-905">
-                              <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-500 mb-1.5">
-                                {language === "bs" ? "Tržišna uloga:" : "Market Share Profile:"}
-                              </span>
-                              <p className="text-[11px] text-slate-300 leading-normal">
-                                {language === "bs"
-                                  ? "Široko rasprostranjena u Tesla, BYD i stacionarnim energetskim kontejnerima. Međutim, potražnja za LFP litijumom i dalje drži cijenu ćelije osjetljivom na fluktuaciju tržišta."
-                                  : "Dominates stationary battery setups and entry-level EVs (such as Tesla Model Y Standard). While robust, high mineral pressure ensures cell cost remains highly vulnerable to raw lithium price surges."}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedBatteryType === "nmc" && (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between pb-2 border-b border-slate-900">
-                              <span className="text-pink-400 font-semibold text-sm">Lithium NMC</span>
-                              <span className="p-1 px-1.5 bg-pink-500/10 text-pink-400 rounded text-[9px] font-bold">ULTRA-HIGH ENERGY</span>
-                            </div>
-
-                            <div className="space-y-2">
-                              <p className="text-xs text-slate-400">
-                                {language === "bs"
-                                  ? "Premium industrijski standard za performanse. Sadrži kobalt, nikl i mangan za postizanje ekstremno visoke energetske gustine."
-                                  : "Premium industry-standard chemistry for ultra-long range. Infuses cobalt, nickel, and manganese layout to drive spectacular density thresholds."}
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] font-mono">
-                                <div className="bg-slate-900 p-2 rounded">
-                                  <span className="block text-slate-500">PROS:</span>
-                                  <span className="text-emerald-400 font-semibold">
-                                    {language === "bs" ? "Ogroman domet, lako" : "Highest energy, lightweight packs"}
-                                  </span>
-                                </div>
-                                <div className="bg-slate-900 p-2 rounded">
-                                  <span className="block text-slate-500">CONS:</span>
-                                  <span className="text-amber-400 font-semibold">
-                                    {language === "bs" ? "Vatra, skup kobalt" : "Extreme thermal runaway risk, ethical cobalt"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="pt-2 border-t border-slate-905">
-                              <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-500 mb-1.5">
-                                {language === "bs" ? "Zabrinutost o održivosti:" : "Sustainability Concerns:"}
-                              </span>
-                              <p className="text-[11px] text-slate-300 leading-normal">
-                                {language === "bs"
-                                  ? "Eksploatacija kobalta (naročito u DRC) često nosi teške optužbe o dječijem radu i devastaciji okoline. Reciklaža je složena."
-                                  : "Cobalt and Nickel extraction are heavily linked with toxic heavy-metal processing. Causes severe localized soil contamination and raises substantial supply audit hazards."}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Quick navigation link back to financial simulation */}
-                      <div className="p-3 bg-indigo-500/5 rounded-lg border border-indigo-500/10 flex justify-between items-center text-[10px]">
-                        <span className="text-slate-400 leading-tight">
-                          {language === "bs" ? "Provjerite profitabilnost u modelaru:" : "Simulate SIB factory outputs:"}
-                        </span>
-                        <button
-                          onClick={() => setActiveTab("financial")}
-                          className="text-[#14F195] font-mono hover:underline font-bold"
-                        >
-                          {language === "bs" ? "MODELAR ➔" : "MODELER ➔"}
-                        </button>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  {/* Sub-section: SIB Cathode structures details */}
-                  <div className="mt-8 pt-6 border-t border-slate-850">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                      <div>
-                        <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-indigo-400" />
-                          <span>{language === "bs" ? "Arhitektura Katodnih Sistema kod Natrijuma" : "Sodium-Ion Cathode System Architectures"}</span>
-                        </h3>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          {language === "bs"
-                            ? "Natrijum-jonske ćelije variraju u nominalnim naponima na osnovu različitih primijenjenih katodnih materijala (layered, polyanionic, prussian white):"
-                            : "Sodium-ion cells display slight differences in nominal voltage platforms based on the exact active cathode material used (layered, polyanionic, prussian white):"}
-                        </p>
-                      </div>
-                      <span className="text-[10px] font-mono p-1 px-2 rounded bg-slate-900 text-slate-400 border border-slate-800">
-                        Na<sub>x</sub>MO<sub>2</sub> vs. NaV vs. Prussian White
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {SODIUM_CATHODES.map((cathode, cidx) => (
-                        <div key={cidx} className="bg-slate-950/80 border border-slate-900 rounded-lg p-3.5 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-bold text-slate-200">{language === "bs" ? cathode.type.bs : cathode.type.en}</span>
-                            <span className="p-1 px-1.5 bg-indigo-500/15 text-indigo-400 rounded text-[9px] font-mono font-bold">
-                              {cathode.voltage}
-                            </span>
-                          </div>
-                          <div className="text-[11px] space-y-1">
-                            <div>
-                              <span className="text-slate-500 text-[10px] uppercase block font-mono">
-                                {language === "bs" ? "Prednosti:" : "Advantages:"}
-                              </span>
-                              <p className="text-slate-300 font-sans leading-tight">
-                                {language === "bs" ? cathode.features.bs : cathode.features.en}
-                              </p>
-                            </div>
-                            <div className="pt-1.5">
-                              <span className="text-slate-500 text-[10px] uppercase block font-mono">
-                                {language === "bs" ? "Izazovi:" : "Limitations:"}
-                              </span>
-                              <p className="text-amber-500 font-sans leading-tight">
-                                {language === "bs" ? cathode.limitations.bs : cathode.limitations.en}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sub-section: 15 Guided FAQ Deep Dive search & accordion */}
-                  <div className="mt-8 pt-6 border-t border-slate-850 space-y-4">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                      <div>
-                        <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono flex items-center gap-2">
-                          <Award className="w-4 h-4 text-emerald-400" />
-                          <span>{language === "bs" ? "Knjiga Istraživačkih FAQ Pitanja (15 Tema)" : "Frequently Asked Questions (FAQ) Reference Vault"}</span>
-                        </h3>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          {language === "bs"
-                            ? "Bonnen Battery i Jean-Marie Tarascon naučna istraživanja strukturisana u 15 jasnih tehničkih poglavlja."
-                            : "Curated comparative research encompassing 15 key technical areas compiled across international battery peer literature."}
-                        </p>
-                      </div>
-
-                      {/* Category quick selectors */}
-                      <div className="flex flex-wrap gap-1">
-                        {["All", "Performance", "Economics", "Safety", "Future"].map((cat) => {
-                          const translatedCatMap: { [key: string]: string } = {
-                            All: language === "bs" ? "Sve" : "All",
-                            Performance: language === "bs" ? "Performanse" : "Performance",
-                            Economics: language === "bs" ? "Ekonomija" : "Economics",
-                            Safety: language === "bs" ? "Sigurnost" : "Safety",
-                            Future: language === "bs" ? "Budućnost" : "Future"
-                          };
-                          return (
+                        <div className="text-right">
+                          <span className={`p-1 px-1.5 rounded text-[10px] font-mono font-medium ${
+                            c.status === "Optimal" ? "text-emerald-400 bg-emerald-500/10" : "text-amber-400 bg-amber-500/10"
+                          }`}>
+                            {c.subsidenceRateMm.toFixed(1)} mm/yr
+                          </span>
+                          {!c.pressureBalanced && (
                             <button
-                              key={cat}
-                              onClick={() => setFaqCategoryFilter(cat)}
-                              className={`p-1 px-2.5 rounded text-[10px] font-mono transition-all ${faqCategoryFilter === cat
-                                  ? "bg-slate-800 text-white font-bold border border-slate-700"
-                                  : "text-slate-400 hover:text-white"
-                                }`}
+                              onClick={() => balanceCavern(c.id)}
+                              disabled={stablizingId === c.id}
+                              className="block mt-1 font-mono text-[9px] text-[#14F195] underline hover:text-white"
                             >
-                              {translatedCatMap[cat]}
+                              {stablizingId === c.id ? "STABILIZING..." : "BALANCE WELL"}
                             </button>
-                          );
-                        })}
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-850 text-center text-[10px] font-mono text-slate-500 font-medium">
+                  InSAR TRACKING SYSTEM // MAXIMUM Displacement: &lt; 5.0mm
+                </div>
+              </div>
+
+            </div>
+
+            {/* F. SIB vs Li-ion Comparative Research Hub (Full Width) */}
+            <div className="mt-8 space-y-8">
+              <div className="bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-5 gap-4">
+                  <div>
+                    <span className="p-1 px-2 rounded bg-[#14F195]/15 text-[#14F195] text-[10px] font-mono tracking-wider font-bold uppercase">
+                      {language === "bs" ? "NAUČNO PREISPITIVANJE" : "SCIENTIFIC PEER COGNITION"}
+                    </span>
+                    <h2 className="text-xl md:text-2xl font-display font-medium text-white flex items-center gap-2 mt-2">
+                      <Zap className="w-6 h-6 text-[#14F195] animate-pulse" />
+                      <span>
+                        {language === "bs" 
+                          ? "SIB vs Litijum: Interaktivno Uporedno Istraživanje" 
+                          : "Sodium-Ion vs Lithium-Ion: Multi-Dimensional Research Hub"}
+                      </span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                      {language === "bs"
+                        ? "Tehničke, ekonomske i geopolitičke komparativne analize. Istražite zašto Tuzla i Solana blockchain grade bankabilni preduslovni lanac za novu eru natrijum-jonskih baterija."
+                        : "State-of-the-art comparative physics and mineral cost-structures. Explore how Tuzla's Tetima reserves position the TUZ Protocol as a global pillar for upcoming sodium-ion commercial deployments."}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedBatteryType("sodium")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                        selectedBatteryType === "sodium"
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                          : "bg-slate-905 text-slate-400 border border-slate-800 hover:text-white"
+                      }`}
+                    >
+                      {language === "bs" ? "Natrijum-jonske (SIB)" : "Sodium-Ion (SIB)"}
+                    </button>
+                    <button
+                      onClick={() => setSelectedBatteryType("lfp")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                        selectedBatteryType === "lfp"
+                          ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40"
+                          : "bg-slate-905 text-slate-400 border border-slate-800 hover:text-white"
+                      }`}
+                    >
+                      Lithium LFP
+                    </button>
+                    <button
+                      onClick={() => setSelectedBatteryType("nmc")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                        selectedBatteryType === "nmc"
+                          ? "bg-pink-500/20 text-pink-400 border border-pink-500/40"
+                          : "bg-slate-905 text-slate-400 border border-slate-800 hover:text-white"
+                      }`}
+                    >
+                      Lithium NMC
+                    </button>
+                  </div>
+                </div>
+
+                {/* Grid layout for comparison and details */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                  
+                  {/* Table Column (Takes 2 grid spaces on desktop) */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono">
+                        {language === "bs" ? "📑 Tehnološko-Ekonomska Matrica poređenja" : "📑 Technological & Cost Structure Matrix"}
+                      </h3>
+                      <span className="text-[10px] font-mono text-slate-500">
+                        {language === "bs" ? "Ažurirano 2026 // Bonnen Battery" : "2026 Scientific Data // Bonnen Battery Source"}
+                      </span>
+                    </div>
+
+                    <div className="border border-slate-850 rounded-xl overflow-hidden bg-slate-1000">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="bg-slate-900/80 border-b border-slate-850 text-[10px] text-slate-400 font-mono uppercase font-semibold">
+                              <th className="p-3">{language === "bs" ? "Parametar" : "Metric Factor"}</th>
+                              <th className="p-3">Lithium LFP</th>
+                              <th className="p-3">Lithium NMC</th>
+                              <th className="p-3 text-emerald-400">{language === "bs" ? "Natrijum-jonska (TUZ)" : "Sodium-ion (TUZ)"}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-900 font-mono">
+                            {BATTERY_METRICS.map((metricRow, idx) => (
+                              <tr 
+                                key={idx} 
+                                className={`hover:bg-slate-900/40 transition-colors ${
+                                  metricRow.highlight ? "bg-indigo-950/10 text-slate-100" : "text-slate-350"
+                                }`}
+                              >
+                                <td className="p-3 font-medium text-slate-200">
+                                  {language === "bs" ? metricRow.metric.bs : metricRow.metric.en}
+                                </td>
+                                <td className="p-3">{language === "bs" ? metricRow.lfp.bs : metricRow.lfp.en}</td>
+                                <td className="p-3">{language === "bs" ? metricRow.nmc.bs : metricRow.nmc.en}</td>
+                                <td className="p-3 text-emerald-400 font-semibold bg-emerald-950/5">
+                                  {language === "bs" ? metricRow.sodium.bs : metricRow.sodium.en}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
 
-                    {/* Search filter input */}
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={faqSearch}
-                        onChange={(e) => setFaqSearch(e.target.value)}
-                        placeholder={
-                          language === "bs"
-                            ? "Pretraži 15 tehničkih istraživačkih pitanja (npr. 'hladno', 'cijena', 'cijus').-."
-                            : "Search 15 technical battery research topics (e.g. 'cold', 'abundant', 'copper', '0V')..."
-                        }
-                        className="w-full bg-slate-950 border border-slate-850 p-2.5 px-4 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
-                      />
-                      {faqSearch && (
-                        <button
-                          onClick={() => setFaqSearch("")}
-                          className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-350 text-xs font-mono"
-                        >
-                          [CLEAR]
-                        </button>
+                    {/* Proactive shipping note */}
+                    <p className="text-[10px] font-mono text-slate-500 leading-normal bg-slate-950 p-2.5 rounded border border-slate-900">
+                      ⚠️ <strong>{language === "bs" ? "Logistička napomena:" : "Logistics Insight:"}</strong>{" "}
+                      {language === "bs"
+                        ? "Litijumske baterije spadaju u opasnu klasu zrakoplovnog transporta (Hazmat Class 9). Natrijum-jonske ćelije se mogu potpuno isprazniti na 0 volti bez oštećenja, što uklanja rizik od termalnog proboja, dramatično pojeftinjujući globalni kargo transport."
+                        : "Lithium cells are classified as hazardous freight requiring special packaging and increased shipping rates. In contrast, SIBs can be completely discharged to 0V for secure transport, entirely neutralizing air freights thermal runaway hazards."}
+                    </p>
+                  </div>
+
+                  {/* Active detailed card column side-by-side */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono">
+                      {language === "bs" ? "🔎 Detaljni Fokus Ćelije" : "🔎 Focus Chemistry Insight"}
+                    </h3>
+
+                    <div className="bg-slate-950 rounded-xl border border-slate-850 p-4 space-y-4">
+                      {selectedBatteryType === "sodium" && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between pb-2 border-b border-slate-900">
+                            <span className="text-emerald-400 font-semibold text-sm">Sodium-Ion (TUZ / Salt)</span>
+                            <span className="p-1 px-1.5 bg-emerald-500/10 text-emerald-400 rounded text-[9px] font-bold">ABUNDANT & CHEAP</span>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <p className="text-xs text-slate-400">
+                              {language === "bs"
+                                ? "Kombinuje sirovi natrijum i ekološke spojeve prusko bijelog ili slojevitih oksida. Zamjenjuje skupi litijum i u potpunosti eliminiše kobalt i nikl."
+                                : "Employs simple sodium carbonate and safe Prussian white/iron precursors. Eliminates expensive lithium, cobalt, and nickel dependence entirely."}
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] font-mono">
+                              <div className="bg-slate-900 p-2 rounded">
+                                <span className="block text-slate-500">PROS:</span>
+                                <span className="text-emerald-400 font-semibold">
+                                  {language === "bs" ? "Jeftino, Hladno, Brz upad" : "Ultra cheap, -40°C performance, 15m Fast Charge"}
+                                </span>
+                              </div>
+                              <div className="bg-slate-900 p-2 rounded">
+                                <span className="block text-slate-500">CONS:</span>
+                                <span className="text-amber-400 font-semibold">
+                                  {language === "bs" ? "Niža gustoća, težina" : "Lower energy density, heavier packs"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-905">
+                            <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-500 mb-1.5">
+                              {language === "bs" ? "Geopolitički Položaj:" : "Geopolitical Leverage:"}
+                            </span>
+                            <p className="text-[11px] text-slate-300 leading-normal">
+                              {language === "bs"
+                                ? "Natrijum pokriva 2,6% Zemljine kore (soli ima svuda). Za razliku od litijuma čiji je geopolitički lanac monopolizovan, natrijum omogućava Evropi i regiji Tuzle potpunu energetsku autonomiju."
+                                : "Sodium resides across 2.6% of Earth's crust (omnipresent in salt reserves). Provides democratic sovereign supply lines, shielding European energy grids from highly protective Lithium export cartels."}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedBatteryType === "lfp" && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between pb-2 border-b border-slate-900">
+                            <span className="text-indigo-400 font-semibold text-sm">Lithium LFP (LiFePO₄)</span>
+                            <span className="p-1 px-1.5 bg-indigo-500/10 text-indigo-400 rounded text-[9px] font-bold">STABLE WORKHORSE</span>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-xs text-slate-400">
+                              {language === "bs"
+                                ? "Najstabilnija komercijalna litijumska hemija. Koristi gvožđe-fosfat, što smanjuje rizik od zapaljenja ali ima ograničenu energetsku gustinu."
+                                : "The standard stable commercial lithium chemistry. Utilizes iron-phosphate, eliminating high-hazard cobalt, though showing limited energy density growth."}
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] font-mono">
+                              <div className="bg-slate-900 p-2 rounded">
+                                <span className="block text-slate-500">PROS:</span>
+                                <span className="text-emerald-400 font-semibold">
+                                  {language === "bs" ? "Dug vijek, siguran" : "3000+ cycles, proven production"}
+                                </span>
+                              </div>
+                              <div className="bg-slate-900 p-2 rounded">
+                                <span className="block text-slate-500">CONS:</span>
+                                <span className="text-amber-400 font-semibold">
+                                  {language === "bs" ? "Slabo na hladnoći" : "Severe performance drop in sub-zero temp"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-905">
+                            <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-500 mb-1.5">
+                              {language === "bs" ? "Tržišna uloga:" : "Market Share Profile:"}
+                            </span>
+                            <p className="text-[11px] text-slate-300 leading-normal">
+                              {language === "bs"
+                                ? "Široko rasprostranjena u Tesla, BYD i stacionarnim energetskim kontejnerima. Međutim, potražnja za LFP litijumom i dalje drži cijenu ćelije osjetljivom na fluktuaciju tržišta."
+                                : "Dominates stationary battery setups and entry-level EVs (such as Tesla Model Y Standard). While robust, high mineral pressure ensures cell cost remains highly vulnerable to raw lithium price surges."}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedBatteryType === "nmc" && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between pb-2 border-b border-slate-900">
+                            <span className="text-pink-400 font-semibold text-sm">Lithium NMC</span>
+                            <span className="p-1 px-1.5 bg-pink-500/10 text-pink-400 rounded text-[9px] font-bold">ULTRA-HIGH ENERGY</span>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-xs text-slate-400">
+                              {language === "bs"
+                                ? "Premium industrijski standard za performanse. Sadrži kobalt, nikl i mangan za postizanje ekstremno visoke energetske gustine."
+                                : "Premium industry-standard chemistry for ultra-long range. Infuses cobalt, nickel, and manganese layout to drive spectacular density thresholds."}
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] font-mono">
+                              <div className="bg-slate-900 p-2 rounded">
+                                <span className="block text-slate-500">PROS:</span>
+                                <span className="text-emerald-400 font-semibold">
+                                  {language === "bs" ? "Ogroman domet, lako" : "Highest energy, lightweight packs"}
+                                </span>
+                              </div>
+                              <div className="bg-slate-900 p-2 rounded">
+                                <span className="block text-slate-500">CONS:</span>
+                                <span className="text-amber-400 font-semibold">
+                                  {language === "bs" ? "Vatra, skup kobalt" : "Extreme thermal runaway risk, ethical cobalt"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-905">
+                            <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-500 mb-1.5">
+                              {language === "bs" ? "Zabrinutost o održivosti:" : "Sustainability Concerns:"}
+                            </span>
+                            <p className="text-[11px] text-slate-300 leading-normal">
+                              {language === "bs"
+                                ? "Eksploatacija kobalta (naročito u DRC) često nosi teške optužbe o dječijem radu i devastaciji okoline. Reciklaža je složena."
+                                : "Cobalt and Nickel extraction are heavily linked with toxic heavy-metal processing. Causes severe localized soil contamination and raises substantial supply audit hazards."}
+                            </p>
+                          </div>
+                        </div>
                       )}
                     </div>
 
-                    {/* FAQ Accordion output */}
-                    <div className="space-y-2 mt-4 max-h-[480px] overflow-y-auto pr-1">
-                      {(() => {
-                        const filtered = FAQ_DATA.filter((faq) => {
-                          const matchesCategory = faqCategoryFilter === "All" || faq.category === faqCategoryFilter;
-                          const qText = (language === "bs" ? faq.q.bs : faq.q.en).toLowerCase();
-                          const aText = (language === "bs" ? faq.a.bs : faq.a.en).toLowerCase();
-                          const s = faqSearch.toLowerCase();
-                          const matchesSearch = qText.includes(s) || aText.includes(s);
-                          return matchesCategory && matchesSearch;
-                        });
-
-                        if (filtered.length === 0) {
-                          return (
-                            <div className="p-8 text-center border border-dashed border-slate-850 rounded-xl text-slate-500 text-xs font-mono">
-                              {language === "bs" ? "Nema rezultata za pretragu. Pokušajte sa kraćom rječju." : "No matching research questions found. Try a different keyword."}
-                            </div>
-                          );
-                        }
-
-                        return filtered.map((faq) => {
-                          const isExpanded = expandedFaqId === faq.id;
-                          return (
-                            <div
-                              key={faq.id}
-                              className={`border border-slate-900 rounded-xl transition-all ${isExpanded ? "bg-slate-950 border-slate-800" : "bg-slate-950/40 hover:bg-slate-900/15"
-                                }`}
-                            >
-                              <button
-                                onClick={() => setExpandedFaqId(isExpanded ? null : faq.id)}
-                                className="w-full text-left p-4 flex justify-between items-center gap-4 focus:outline-none"
-                              >
-                                <div className="flex items-start gap-2.5">
-                                  <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase mt-0.5 font-bold ${faq.category === "Performance" ? "bg-indigo-500/10 text-indigo-400" :
-                                      faq.category === "Economics" ? "bg-emerald-500/10 text-emerald-400" :
-                                        faq.category === "Safety" ? "bg-amber-500/10 text-amber-400" : "bg-pink-500/10 text-pink-400"
-                                    }`}>
-                                    {language === "bs" ? faq.categoryBs : faq.category}
-                                  </span>
-                                  <h4 className="text-xs font-semibold text-slate-200 leading-relaxed font-sans">
-                                    {language === "bs" ? faq.q.bs : faq.q.en}
-                                  </h4>
-                                </div>
-                                <span className="text-slate-500 font-mono text-xs select-none">
-                                  {isExpanded ? "[-]" : "[+]"}
-                                </span>
-                              </button>
-
-                              {isExpanded && (
-                                <div className="p-4 pt-0 border-t border-slate-900/60 text-xs text-slate-400 leading-relaxed font-sans space-y-2">
-                                  <p>{language === "bs" ? faq.a.bs : faq.a.en}</p>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        });
-                      })()}
-                    </div>
-
-                    {/* Research Author Credit Line */}
-                    <div className="pt-2 flex justify-between items-center text-[10px] font-mono text-slate-500 border-t border-slate-900/50">
-                      <span>
-                        {language === "bs" ? "Uredio: Dr. Jean-Marie Tarascon, Profesor na Collège de France" : "Edited by: Prof. Jean-Marie Tarascon, Collège de France"}
+                    {/* Quick navigation link back to financial simulation */}
+                    <div className="p-3 bg-indigo-500/5 rounded-lg border border-indigo-500/10 flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 leading-tight">
+                        {language === "bs" ? "Provjerite profitabilnost u modelaru:" : "Simulate SIB factory outputs:"}
                       </span>
-                      <span>
-                        bonnenbatteries.com
-                      </span>
+                      <button 
+                        onClick={() => setActiveTab("financial")}
+                        className="text-[#14F195] font-mono hover:underline font-bold"
+                      >
+                        {language === "bs" ? "MODELAR ➔" : "MODELER ➔"}
+                      </button>
                     </div>
                   </div>
 
                 </div>
+
+                {/* Sub-section: SIB Cathode structures details */}
+                <div className="mt-8 pt-6 border-t border-slate-850">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <div>
+                      <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-indigo-400" />
+                        <span>{language === "bs" ? "Arhitektura Katodnih Sistema kod Natrijuma" : "Sodium-Ion Cathode System Architectures"}</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        {language === "bs" 
+                          ? "Natrijum-jonske ćelije variraju u nominalnim naponima na osnovu različitih primijenjenih katodnih materijala (layered, polyanionic, prussian white):" 
+                          : "Sodium-ion cells display slight differences in nominal voltage platforms based on the exact active cathode material used (layered, polyanionic, prussian white):"}
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono p-1 px-2 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                      Na<sub>x</sub>MO<sub>2</sub> vs. NaV vs. Prussian White
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {SODIUM_CATHODES.map((cathode, cidx) => (
+                      <div key={cidx} className="bg-slate-950/80 border border-slate-900 rounded-lg p-3.5 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-200">{language === "bs" ? cathode.type.bs : cathode.type.en}</span>
+                          <span className="p-1 px-1.5 bg-indigo-500/15 text-indigo-400 rounded text-[9px] font-mono font-bold">
+                            {cathode.voltage}
+                          </span>
+                        </div>
+                        <div className="text-[11px] space-y-1">
+                          <div>
+                            <span className="text-slate-500 text-[10px] uppercase block font-mono">
+                              {language === "bs" ? "Prednosti:" : "Advantages:"}
+                            </span>
+                            <p className="text-slate-300 font-sans leading-tight">
+                              {language === "bs" ? cathode.features.bs : cathode.features.en}
+                            </p>
+                          </div>
+                          <div className="pt-1.5">
+                            <span className="text-slate-500 text-[10px] uppercase block font-mono">
+                              {language === "bs" ? "Izazovi:" : "Limitations:"}
+                            </span>
+                            <p className="text-amber-500 font-sans leading-tight">
+                              {language === "bs" ? cathode.limitations.bs : cathode.limitations.en}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sub-section: 15 Guided FAQ Deep Dive search & accordion */}
+                <div className="mt-8 pt-6 border-t border-slate-850 space-y-4">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                      <h3 className="text-sm font-display font-medium text-slate-200 uppercase tracking-wider font-mono flex items-center gap-2">
+                        <Award className="w-4 h-4 text-emerald-400" />
+                        <span>{language === "bs" ? "Knjiga Istraživačkih FAQ Pitanja (15 Tema)" : "Frequently Asked Questions (FAQ) Reference Vault"}</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        {language === "bs" 
+                          ? "Bonnen Battery i Jean-Marie Tarascon naučna istraživanja strukturisana u 15 jasnih tehničkih poglavlja." 
+                          : "Curated comparative research encompassing 15 key technical areas compiled across international battery peer literature."}
+                      </p>
+                    </div>
+
+                    {/* Category quick selectors */}
+                    <div className="flex flex-wrap gap-1">
+                      {["All", "Performance", "Economics", "Safety", "Future"].map((cat) => {
+                        const translatedCatMap: { [key: string]: string } = {
+                          All: language === "bs" ? "Sve" : "All",
+                          Performance: language === "bs" ? "Performanse" : "Performance",
+                          Economics: language === "bs" ? "Ekonomija" : "Economics",
+                          Safety: language === "bs" ? "Sigurnost" : "Safety",
+                          Future: language === "bs" ? "Budućnost" : "Future"
+                        };
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => setFaqCategoryFilter(cat)}
+                            className={`p-1 px-2.5 rounded text-[10px] font-mono transition-all ${
+                              faqCategoryFilter === cat
+                                ? "bg-slate-800 text-white font-bold border border-slate-700"
+                                : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            {translatedCatMap[cat]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Search filter input */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={faqSearch}
+                      onChange={(e) => setFaqSearch(e.target.value)}
+                      placeholder={
+                        language === "bs"
+                          ? "Pretraži 15 tehničkih istraživačkih pitanja (npr. 'hladno', 'cijena', 'cijus').-."
+                          : "Search 15 technical battery research topics (e.g. 'cold', 'abundant', 'copper', '0V')..."
+                      }
+                      className="w-full bg-slate-950 border border-slate-850 p-2.5 px-4 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                    />
+                    {faqSearch && (
+                      <button
+                        onClick={() => setFaqSearch("")}
+                        className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-350 text-xs font-mono"
+                      >
+                        [CLEAR]
+                      </button>
+                    )}
+                  </div>
+
+                  {/* FAQ Accordion output */}
+                  <div className="space-y-2 mt-4 max-h-[480px] overflow-y-auto pr-1">
+                    {(() => {
+                      const filtered = FAQ_DATA.filter((faq) => {
+                        const matchesCategory = faqCategoryFilter === "All" || faq.category === faqCategoryFilter;
+                        const qText = (language === "bs" ? faq.q.bs : faq.q.en).toLowerCase();
+                        const aText = (language === "bs" ? faq.a.bs : faq.a.en).toLowerCase();
+                        const s = faqSearch.toLowerCase();
+                        const matchesSearch = qText.includes(s) || aText.includes(s);
+                        return matchesCategory && matchesSearch;
+                      });
+
+                      if (filtered.length === 0) {
+                        return (
+                          <div className="p-8 text-center border border-dashed border-slate-850 rounded-xl text-slate-500 text-xs font-mono">
+                            {language === "bs" ? "Nema rezultata za pretragu. Pokušajte sa kraćom rječju." : "No matching research questions found. Try a different keyword."}
+                          </div>
+                        );
+                      }
+
+                      return filtered.map((faq) => {
+                        const isExpanded = expandedFaqId === faq.id;
+                        return (
+                          <div 
+                            key={faq.id} 
+                            className={`border border-slate-900 rounded-xl transition-all ${
+                              isExpanded ? "bg-slate-950 border-slate-800" : "bg-slate-950/40 hover:bg-slate-900/15"
+                            }`}
+                          >
+                            <button
+                              onClick={() => setExpandedFaqId(isExpanded ? null : faq.id)}
+                              className="w-full text-left p-4 flex justify-between items-center gap-4 focus:outline-none"
+                            >
+                              <div className="flex items-start gap-2.5">
+                                <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase mt-0.5 font-bold ${
+                                  faq.category === "Performance" ? "bg-indigo-500/10 text-indigo-400" :
+                                  faq.category === "Economics" ? "bg-emerald-500/10 text-emerald-400" :
+                                  faq.category === "Safety" ? "bg-amber-500/10 text-amber-400" : "bg-pink-500/10 text-pink-400"
+                                }`}>
+                                  {language === "bs" ? faq.categoryBs : faq.category}
+                                </span>
+                                <h4 className="text-xs font-semibold text-slate-200 leading-relaxed font-sans">
+                                  {language === "bs" ? faq.q.bs : faq.q.en}
+                                </h4>
+                              </div>
+                              <span className="text-slate-500 font-mono text-xs select-none">
+                                {isExpanded ? "[-]" : "[+]"}
+                              </span>
+                            </button>
+
+                            {isExpanded && (
+                              <div className="p-4 pt-0 border-t border-slate-900/60 text-xs text-slate-400 leading-relaxed font-sans space-y-2">
+                                <p>{language === "bs" ? faq.a.bs : faq.a.en}</p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                  
+                  {/* Research Author Credit Line */}
+                  <div className="pt-2 flex justify-between items-center text-[10px] font-mono text-slate-500 border-t border-slate-900/50">
+                    <span>
+                      {language === "bs" ? "Uredio: Dr. Jean-Marie Tarascon, Profesor na Collège de France" : "Edited by: Prof. Jean-Marie Tarascon, Collège de France"}
+                    </span>
+                    <span>
+                      bonnenbatteries.com
+                    </span>
+                  </div>
+                </div>
+
               </div>
             </div>
-          )}
+          </div>
+        )}
 
           {/* E. If showing Investor Economics and Financial Sliders Tab */}
           {activeTab === "financial" && (
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
-
+              
               <div className="border-b border-slate-800 pb-4">
                 <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
                   <Sliders className="w-5 h-5 text-indigo-400" />
@@ -1874,7 +1908,7 @@ export default function App() {
 
               {/* Sliders Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+                
                 {/* Sliders Group */}
                 <div className="space-y-4">
                   <div>
@@ -2001,7 +2035,7 @@ export default function App() {
           {/* F. If showing Live Gemini AI Pitch Customizer */}
           {activeTab === "ai_tailor" && (
             <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
-
+              
               <div>
                 <h3 className="text-lg font-display font-medium text-white flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-[#14F195]" />
@@ -2014,7 +2048,7 @@ export default function App() {
 
               {/* Selector Panels */}
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-
+                
                 {/* Left Side options Selection (5/12) */}
                 <div className="xl:col-span-4 space-y-4 flex flex-col justify-between">
                   <div className="space-y-3">
@@ -2024,10 +2058,11 @@ export default function App() {
                         <button
                           key={profile.id}
                           onClick={() => setSelectedInvestorId(profile.id)}
-                          className={`w-full p-2.5 rounded-lg border text-left flex items-start justify-between gap-2 transition-all-300 ${selectedInvestorId === profile.id
+                          className={`w-full p-2.5 rounded-lg border text-left flex items-start justify-between gap-2 transition-all-300 ${
+                            selectedInvestorId === profile.id
                               ? "bg-slate-950 border-[#14F195]/40"
                               : "bg-slate-950/30 border-slate-850 opacity-70 hover:opacity-100"
-                            }`}
+                          }`}
                         >
                           <div>
                             <p className="text-xs font-bold text-slate-100">{profile.name}</p>
@@ -2108,7 +2143,7 @@ export default function App() {
                 </div>
 
               </div>
-
+              
             </div>
           )}
 
